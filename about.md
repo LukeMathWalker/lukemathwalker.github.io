@@ -5,8 +5,8 @@ subtitle: Just who the hell you think I am?
 permalink: /about/
 ---
 
-This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at [jekyllrb.com](http://jekyllrb.com/)
+I'm a math master student who is completing his higher education at the University of Trieste/SISSA.
 
-You can find the source code for the Jekyll new theme at: [github.com/jglovier/jekyll-new](https://github.com/jglovier/jekyll-new)
+I'm interested in the usage of mathematical tools to model physical/biological/socio-economic phenomena of interest, using both analytical (PDEs) and statistical tools (data analysis, machine learning, deep learning).
 
-You can find the source code for Jekyll at [github.com/jekyll/jekyll](https://github.com/jekyll/jekyll)
+I'm currently working on my master thesis: we're using deep learning techniques to improve and speed up the state-of-the-art computational models currently available to perform cell simulations in healthy and cancer tissues.

@@ -3,7 +3,7 @@ title: Luca Palmieri
 description: >
   Exploring the world of machine learning and deep learning through the lens of a
   young mathematician. "Learning Journal" is a place to collect think pieces, use-cases,
-  examples and tutorial concerning artificial intelligence and machine learning at large.
+  examples and tutorials concerning artificial intelligence and machine learning at large.
 
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: "http://lukemathwalker.github.io" # the base hostname & protocol for your site

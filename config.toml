@@ -1,5 +1,0 @@
-baseURL = "http://lpalmieri.com"
-languageCode = "en-uk"
-title = "Travel Journal of an AI Adventurer"
-theme = "cactus-plus"
-publishDir = "docs"

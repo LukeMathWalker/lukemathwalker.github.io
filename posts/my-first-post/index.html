@@ -8,7 +8,7 @@
 		<meta name="author" content="Luca Palmieri">
 		<meta name="description" content="A personal blog focused on AI content and tutorials.">
 		<meta name="generator" content="Hugo 0.31.1" />
-		<title>My First Post &middot; Travel journal of an AI adventure</title>
+		<title>Reinforcement Learning: a comprehensive introduction [Part 1] &middot; Travel journal of an AI adventure</title>
 		<link rel="shortcut icon" href="http://lukemathwalker.github.io/images/favicon.ico">
 		<link rel="stylesheet" href="http://lukemathwalker.github.io/css/style.css">
 		<link rel="stylesheet" href="http://lukemathwalker.github.io/css/highlight.css">
@@ -46,12 +46,12 @@
             <article>
                 <header>
                     <h1>
-                        My First Post
+                        Reinforcement Learning: a comprehensive introduction [Part 1]
                     </h1>
                     <h2 class="headline">
                     Dec 28, 2017 21:36
-                    · 0 word
-                    · 0 minute read
+                    · 393 words
+                    · 2 minute read
                       <span class="tags">
                       
                       </span>
@@ -61,12 +61,112 @@
                   
                 
                 <section id="post-body">
-                    
+                    <table>
+<thead>
+<tr>
+<th align="center">Object</th>
+<th align="center">Notation</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td align="center">State space</td>
+<td align="center">$\mathcal{S}$</td>
+</tr>
+
+<tr>
+<td align="center">State at time $t$</td>
+<td align="center">$S_t$</td>
+</tr>
+
+<tr>
+<td align="center">Available actions in state $s$</td>
+<td align="center">$\mathcal{A}(s)$</td>
+</tr>
+
+<tr>
+<td align="center">Action taken at time $t$</td>
+<td align="center">$A_t$</td>
+</tr>
+
+<tr>
+<td align="center">Reward space</td>
+<td align="center">$\mathcal{R}$</td>
+</tr>
+
+<tr>
+<td align="center">Reward after action $A_t$</td>
+<td align="center">$R_{t+1}$</td>
+</tr>
+</tbody>
+</table>
+
+<p>Let <code>$ a\in\mathcal{A}(s) $</code>, <code>$ r\in\mathcal{R} $</code> and $s, s&rsquo;\in\mathcal{S}$. Then:
+<div>$$
+p(s&rsquo;, r:|: s,a):=\mathbb{P}\left(S<em>t=s&rsquo;, R</em>{t+1}=r:|:S<em>{t-1}=s, A</em>{t-1}=a\right)
+$$</div>
+We have that (<em>probability measure</em>)
+$$
+\sum_{s&rsquo;\in\mathcal{S},:r\in\mathcal{R}}p(s&rsquo;, r:|: s,a) = 1
+$$
+<br>
+Let $r(s,a)$ define the expected reward for a state-action pair, namely
+$$
+r(s,a) := \mathbb{E}\left[R<em>t:\middle|:S</em>{t-1}=s,: A<em>{t-1}=a\right]
+$$
+Then
+$$
+r(s,a) = \sum</em>{r\in\mathcal{R}} rp(r:|:s, a) = \sum<em>{r\in\mathcal{R}} r \sum</em>{s&rsquo;\in\mathcal{S}} p(r, s&rsquo;:|:s, a)
+$$
+<br>
+Let $r(s,a,s&rsquo;)$ define the expected reward for a state/action/next-state triple, namely
+$$
+r(s,a,s&rsquo;) := \mathbb{E}\left[R<em>t:\middle|:S</em>{t-1}=s,: A<em>{t-1}=a,:S</em>{t}=s&rsquo;\right]
+$$
+Then
+$$
+r(s,a,s&rsquo;) = \sum<em>{r\in\mathcal{R}} rp(r:|:s, a, s&rsquo;) = \sum</em>{r\in\mathcal{R}} r \sum_{s&rsquo;\in\mathcal{S}} \frac{p(r, s&rsquo;:|:s, a)}{p(s&rsquo;:|:s,a)}
+$$
+<br>
+The return at time $t$, $G_t$, is defined as follows:
+$$
+G<em>t := \sum</em>{k=t+1}^{T}\gamma^{k-t-1}R_k
+$$
+where $\gamma\in[0, 1]$ is called <strong>discount rate</strong> and $T\in\mathbb{R}\cup{+\infty}$. <br>
+We implicitly assume that if $\gamma=1$ then $T\neq +\infty$, and vice versa. <br>
+We can derive, just from the definition, an easy property of the return $G_t$:
+$$
+G<em>t = \sum</em>{k=t+1}^{T}\gamma^{k-t-1}R<em>k = R</em>{t+1} + \gamma\sum_{k=t+2}^{T}\gamma^{k-t-2}R<em>k = R</em>{t+1} + \gamma G_{t+1}
+$$
+Observe also that if $T=+\infty$ and $R_t$ is bounded for every $t$ - namely, there exists $M&gt;0$ such that $|R_t|\leq M$ for all $t$ - we still have that $G_t$ is finite. In fact:
+$$
+|G<em>t| \leq \sum</em>{k=t+1}^{+\infty}\left|\gamma^{k-t-1}R<em>k\right| = \sum</em>{k=t+1}^{+\infty}\gamma^{k-t-1}\left|R<em>k\right| \leq M \sum</em>{k=t+1}^{+\infty}\gamma^{k-t-1} = \frac{M}{1-\gamma} &lt; +\infty
+$$
+<br></p>
+
+<p>A policy $\pi$ is mapping between the state space $\mathcal{S}$ and the probabilities of selecting each possible action (a function from $S$ to the space of probabilities over $\mathcal{A}$, assumming it doesn&rsquo;t change w.r.t. $s$). <br>
+We shall denote by $\pi(a\,|\,s)$ the probability of taking action $a$ if we are in state $s$. (We are assuming that $\pi$ is not time dependent)</p>
+
+<p>The value of a state $s$ under a policy $\pi$ is the expected return when starting in $s$ and following $\pi$ thereafter. We shall denote it by $v<em>\pi(s)$. Formally:
+$$
+v</em>\pi(s):= \mathbb{E}_{\pi}\left[G_t:\middle|:S<em>t=s\right]
+$$
+$v</em>\pi$ is also called the <strong>state-value function for policy $\pi$</strong>.
+<br></p>
+
+<p>The value of taking action $a$ in state $s$ under a policy $\pi$ is the expected return when starting in $s$, taking action $a$ and therefore following $\pi$. We shall denote it by $q<em>\pi(s, a)$. Formally:
+$$
+q</em>\pi(s, a):= \mathbb{E}_{\pi}\left[G_t:\middle|:S_t=s,\,A<em>t=a\right]
+$$
+$q</em>\pi(s, a)$ is also called the <strong>action-value function for policy $\pi$</strong>.
+<br></p>
+
                 </section>
             </article>
 
             
-                <a class="twitter" href="https://twitter.com/intent/tweet?text=http%3a%2f%2flukemathwalker.github.io%2fposts%2fmy-first-post%2f - My%20First%20Post "><span class="icon-twitter"> tweet</span></a>
+                <a class="twitter" href="https://twitter.com/intent/tweet?text=http%3a%2f%2flukemathwalker.github.io%2fposts%2fmy-first-post%2f - Reinforcement%20Learning%3a%20a%20comprehensive%20introduction%20%5bPart%201%5d "><span class="icon-twitter"> tweet</span></a>
 
 <a class="facebook" href="#" onclick="
     window.open(
@@ -82,36 +182,7 @@
 
             
 
-            <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-</script>
-
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  tex2jax: {
-    inlineMath: [['$','$'], ['\\(','\\)']],
-    displayMath: [['$$','$$'], ['\[','\]']],
-    processEscapes: true,
-    processEnvironments: true,
-    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-    TeX: { equationNumbers: { autoNumber: "AMS" },
-	 extensions: ["AMSmath.js", "AMSsymbols.js"] }
-  }
-});
-</script>
-
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Queue(function() {
-    // Fix <code> tags after MathJax finishes running. This is a
-    // hack to overcome a shortcoming of Markdown. Discussion at
-    // https://github.com/mojombo/jekyll/issues/199
-    var all = MathJax.Hub.getAllJax(), i;
-    for(i = 0; i &lt; all.length; i += 1) {
-	all[i].SourceElement().parentNode.className += ' has-jax';
-    }
-});
-</script>
-
-<footer id="footer">
+            <footer id="footer">
     
         <div id="social">
 
@@ -145,6 +216,31 @@ MathJax.Hub.Config({
         <script src="http://lukemathwalker.github.io/js/jquery-2.2.4.min.js"></script>
 <script src="http://lukemathwalker.github.io/js/main.js"></script>
 <script src="http://lukemathwalker.github.io/js/highlight.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\[','\]']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+    TeX: { equationNumbers: { autoNumber: "AMS" },
+	 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+});
+</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i = 0; i &lt; all.length; i += 1) {
+	all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+});
+</script>
 <script>hljs.initHighlightingOnLoad();</script>
 
 

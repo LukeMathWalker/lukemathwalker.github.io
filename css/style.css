@@ -544,7 +544,7 @@ Post List
 #header {
 }
 #wrapper.post {
-    max-width: 670px;
+    max-width: 70%;
 }
 .post {
     margin: auto;
@@ -941,4 +941,10 @@ code.has-jax {
     background: inherit;
     border: inherit;
     color: #515151;
+    box-shadow: none;
+    padding: 0;
+}
+
+div.MathJax_Display {
+    margin: 4px
 }

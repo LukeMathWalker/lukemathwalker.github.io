@@ -50,8 +50,8 @@
                     </h1>
                     <h2 class="headline">
                     Dec 28, 2017 21:36
-                    · 393 words
-                    · 2 minute read
+                    · 800 words
+                    · 4 minute read
                       <span class="tags">
                       
                       </span>
@@ -59,9 +59,27 @@
                 </header>
                 
                   
+                    <div id="toc">
+                      <nav id="TableOfContents">
+<ul>
+<li><a href="#notation-and-basic-definitions">Notation and basic definitions</a></li>
+<li><a href="#policies">Policies</a>
+<ul>
+<li><a href="#decision-rules">Decision rules</a></li>
+</ul></li>
+<li><a href="#bellman-equation">Bellman equation</a></li>
+<li><a href="#optimal-policies">Optimal policies</a></li>
+</ul>
+</nav>
+                    </div>
+                  
                 
                 <section id="post-body">
-                    <table>
+                    
+
+<h1 id="notation-and-basic-definitions">Notation and basic definitions</h1>
+
+<table>
 <thead>
 <tr>
 <th align="center">Object</th>
@@ -102,65 +120,148 @@
 </tbody>
 </table>
 
-<p>Let <code>$ a\in\mathcal{A}(s) $</code>, <code>$ r\in\mathcal{R} $</code> and $s, s&rsquo;\in\mathcal{S}$. Then:
-<div>$$
-p(s&rsquo;, r:|: s,a):=\mathbb{P}\left(S<em>t=s&rsquo;, R</em>{t+1}=r:|:S<em>{t-1}=s, A</em>{t-1}=a\right)
-$$</div>
+<ul>
+<li>Let <code>$ a\in\mathcal{A}(s) $</code>, <code>$ r\in\mathcal{R} $</code> and <code>$s, s'\in\mathcal{S}$</code>. Then:
+<code>$$ p(s', r\:|\: s,a):=\mathbb{P}\left(S_t=s', R_{t+1}=r\:|\:S_{t-1}=s, A_{t-1}=a\right) $$</code>
 We have that (<em>probability measure</em>)
-$$
-\sum_{s&rsquo;\in\mathcal{S},:r\in\mathcal{R}}p(s&rsquo;, r:|: s,a) = 1
-$$
-<br>
-Let $r(s,a)$ define the expected reward for a state-action pair, namely
-$$
-r(s,a) := \mathbb{E}\left[R<em>t:\middle|:S</em>{t-1}=s,: A<em>{t-1}=a\right]
-$$
+<code>$$
+\sum_{s'\in\mathcal{S},\:r\in\mathcal{R}}p(s', r\:|\: s,a) = 1
+$$</code>
+<br></li>
+<li>Let <code>$r(s,a)$</code> define the expected reward for a state-action pair, namely
+<code>$$
+r(s,a) := \mathbb{E}\left[R_t\:\middle|\:S_{t-1}=s,\: A_{t-1}=a\right]
+$$</code>
 Then
-$$
-r(s,a) = \sum</em>{r\in\mathcal{R}} rp(r:|:s, a) = \sum<em>{r\in\mathcal{R}} r \sum</em>{s&rsquo;\in\mathcal{S}} p(r, s&rsquo;:|:s, a)
-$$
-<br>
-Let $r(s,a,s&rsquo;)$ define the expected reward for a state/action/next-state triple, namely
-$$
-r(s,a,s&rsquo;) := \mathbb{E}\left[R<em>t:\middle|:S</em>{t-1}=s,: A<em>{t-1}=a,:S</em>{t}=s&rsquo;\right]
-$$
+<code>$$
+r(s,a) = \sum_{r\in\mathcal{R}} rp(r\:|\:s, a) = \sum_{r\in\mathcal{R}} r \sum_{s'\in\mathcal{S}} p(r, s'\:|\:s, a)
+$$</code>
+<br></li>
+<li>Let <code>$r(s,a,s')$</code> define the expected reward for a state/action/next-state triple, namely
+<code>$$
+r(s,a,s') := \mathbb{E}\left[R_t\:\middle|\:S_{t-1}=s,\: A_{t-1}=a,\:S_{t}=s'\right]
+$$</code>
 Then
-$$
-r(s,a,s&rsquo;) = \sum<em>{r\in\mathcal{R}} rp(r:|:s, a, s&rsquo;) = \sum</em>{r\in\mathcal{R}} r \sum_{s&rsquo;\in\mathcal{S}} \frac{p(r, s&rsquo;:|:s, a)}{p(s&rsquo;:|:s,a)}
-$$
-<br>
-The return at time $t$, $G_t$, is defined as follows:
-$$
-G<em>t := \sum</em>{k=t+1}^{T}\gamma^{k-t-1}R_k
-$$
-where $\gamma\in[0, 1]$ is called <strong>discount rate</strong> and $T\in\mathbb{R}\cup{+\infty}$. <br>
-We implicitly assume that if $\gamma=1$ then $T\neq +\infty$, and vice versa. <br>
-We can derive, just from the definition, an easy property of the return $G_t$:
-$$
-G<em>t = \sum</em>{k=t+1}^{T}\gamma^{k-t-1}R<em>k = R</em>{t+1} + \gamma\sum_{k=t+2}^{T}\gamma^{k-t-2}R<em>k = R</em>{t+1} + \gamma G_{t+1}
-$$
-Observe also that if $T=+\infty$ and $R_t$ is bounded for every $t$ - namely, there exists $M&gt;0$ such that $|R_t|\leq M$ for all $t$ - we still have that $G_t$ is finite. In fact:
-$$
-|G<em>t| \leq \sum</em>{k=t+1}^{+\infty}\left|\gamma^{k-t-1}R<em>k\right| = \sum</em>{k=t+1}^{+\infty}\gamma^{k-t-1}\left|R<em>k\right| \leq M \sum</em>{k=t+1}^{+\infty}\gamma^{k-t-1} = \frac{M}{1-\gamma} &lt; +\infty
-$$
+<code>$$
+r(s,a,s') = \sum_{r\in\mathcal{R}} rp(r\:|\:s, a, s') = \sum_{r\in\mathcal{R}} r \sum_{s'\in\mathcal{S}} \frac{p(r, s'\:|\:s, a)}{p(s'\:|\:s,a)}
+$$</code>
+<br></li>
+<li>The return at time $t$, $G_t$, is defined as follows:
+<code>$$
+G_t := \sum_{k=t+1}^{T}\gamma^{k-t-1}R_k
+$$</code>
+where <code>$\gamma\in[0, 1]$</code> is called <strong>discount rate</strong> and <code>$T\in\mathbb{R}\cup\{+\infty\}$</code>. <br>
+We implicitly assume that if <code>$\gamma=1$</code> then <code>$T\neq +\infty$</code>, and vice versa. <br>
+We can derive, just from the definition, an easy property of the return <code>$G_t$</code>:
+<code>$$
+G_t = \sum_{k=t+1}^{T}\gamma^{k-t-1}R_k = R_{t+1} + \gamma\sum_{k=t+2}^{T}\gamma^{k-t-2}R_k = R_{t+1} + \gamma G_{t+1}
+$$</code>
+Observe also that if <code>$T=+\infty$</code> and <code>$R_t$</code> is bounded for every <code>$t$</code> - namely, there exists <code>$M&gt;0$</code> such that <code>$|R_t|\leq M$</code> for all <code>$t$</code> - we still have that <code>$G_t$</code> is finite. In fact:
+<code>$$
+|G_t| \leq \sum_{k=t+1}^{+\infty}\left|\gamma^{k-t-1}R_k\right| = \sum_{k=t+1}^{+\infty}\gamma^{k-t-1}\left|R_k\right| \leq M \sum_{k=t+1}^{+\infty}\gamma^{k-t-1} = \frac{M}{1-\gamma} &lt; +\infty
+$$</code>
+<br></li>
+</ul>
+
+<h1 id="policies">Policies</h1>
+
+<h2 id="decision-rules">Decision rules</h2>
+
+<p>A <strong>randomized history-dependent decision rule</strong> <code>$\pi$</code> is a mapping between the history of our system up to the current state and the probabilities of selecting each possible action. <br>
+What is the history of the system? Nothing more than the sequence of past actions and states (we are not considering decision rules depending on past rewards). <br>
+We shall denote the history of our system up to time <code>$t$</code> as
+<code>$$h_t=(s_1, a_1, s_2, \dots, a_{t-1}, s_t) \quad\quad t\in\{1, 2, \dots\}$$</code>
+Using a little bit of recursion we can get a much more compact notation for our system history:
+<code>$$
+h_t=(h_{t-1}, a_t, s_t) \quad\quad\quad\quad t\in\{1, 2, \dots\}
+$$</code>
+We can thus define the set of histories as
+<code>$$
+H_t=\prod_1^t (S\times A) \quad\quad t\in\{1, 2, \dots\}
+$$</code>
+or, equivalenty,
+<code>$$
+H_t=H_{t-1}\times S \times A \quad\quad t\in\{1, 2, \dots\}
+$$</code>
+We can thus formally denote a history-dependent decision rule <code>$\pi$</code> as a function
+<code>$$
+\pi: H_t \to \mathcal{P}(A)
+$$</code>
+We shall denote by <code>$b_{\pi}(a\,|\,h_t)$</code> or <code>$b_{\pi(h_t)}(a)$</code> the probability of taking action <code>$a$</code> if our system history up to time <code>$t$</code> is equal to <code>$h_t$</code>. <br></p>
+
+<p>We can also consider a <strong>deterministic history-dependent decision rule</strong> <code>$\pi$</code>, which can be seen as a function:
+<code>$$
+\pi: H_t \to A
+$$</code>
+or, equivalently, as a randomized history-dependent decision rule such that for each <code>$h_t$</code> there exists a unique <code>$a\in A$</code> with <code>$b_{\pi(h_t)}(a)=1$</code>.<br></p>
+
+<p>If we denote the set of randomized history-dependent decision rules as <code>$\Pi^{HR}$</code> and the set of deterministic history-dependent decision rule as <code>$\Pi^{HD}$</code> we clearly have
+<code>$$
+\Pi^{HD} \subset \Pi^{HR} 
+$$</code></p>
+
+<p>The value of a state <code>$s$</code> under a policy <code>$\pi$</code> is the expected return when starting in $s$ and following $\pi$ thereafter. We shall denote it by <code>$v_\pi(s)$</code>. Formally:
+<code>$$
+v_\pi(s):= \mathbb{E}_{\pi}\left[G_t\:\middle|\:S_t=s\right]
+$$</code>
+<code>$v_\pi$</code> is also called the <strong>state-value function for policy <code>$\pi$</code></strong>.
 <br></p>
 
-<p>A policy $\pi$ is mapping between the state space $\mathcal{S}$ and the probabilities of selecting each possible action (a function from $S$ to the space of probabilities over $\mathcal{A}$, assumming it doesn&rsquo;t change w.r.t. $s$). <br>
-We shall denote by $\pi(a\,|\,s)$ the probability of taking action $a$ if we are in state $s$. (We are assuming that $\pi$ is not time dependent)</p>
-
-<p>The value of a state $s$ under a policy $\pi$ is the expected return when starting in $s$ and following $\pi$ thereafter. We shall denote it by $v<em>\pi(s)$. Formally:
-$$
-v</em>\pi(s):= \mathbb{E}_{\pi}\left[G_t:\middle|:S<em>t=s\right]
-$$
-$v</em>\pi$ is also called the <strong>state-value function for policy $\pi$</strong>.
+<p>The value of taking action $a$ in state $s$ under a policy <code>$\pi$</code> is the expected return when starting in <code>$s$</code>, taking action $a$ and therefore following <code>$\pi$</code>. We shall denote it by <code>$q_\pi(s, a)$</code>. Formally:
+<code>$$
+q_\pi(s, a):= \mathbb{E}_{\pi}\left[G_t\:\middle|\:S_t=s,\,A_t=a\right]
+$$</code>
+<code>$q_\pi(s, a)$</code> is also called the <strong>action-value function for policy <code>$\pi$</code></strong>.
 <br></p>
 
-<p>The value of taking action $a$ in state $s$ under a policy $\pi$ is the expected return when starting in $s$, taking action $a$ and therefore following $\pi$. We shall denote it by $q<em>\pi(s, a)$. Formally:
-$$
-q</em>\pi(s, a):= \mathbb{E}_{\pi}\left[G_t:\middle|:S_t=s,\,A<em>t=a\right]
-$$
-$q</em>\pi(s, a)$ is also called the <strong>action-value function for policy $\pi$</strong>.
+<h1 id="bellman-equation">Bellman equation</h1>
+
+<p>The state-value function for a policy <code>$\pi$</code> satisfies a recursive relationship similar (in spirit) to the one satisfied by the return <code>$G_t$</code>. We have
+<code>$$
+\begin{align}
+v_\pi(s) &amp;= \mathbb{E}_{\pi}\left[G_t\:\middle|\:S_t=s\right]= \\
+&amp;= \mathbb{E}_{\pi}\left[R_{t+1} +\gamma G_{t+1}\:\middle|\:S_t=s\right]= \\
+&amp;= \mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:S_t=s\right] +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]= \\
+&amp;= \sum_{r\in\mathcal{R}}r\,\mathbb{P}\left( R_{t+1}=r\:\middle|\: S_{t}=s \right) +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]
+\end{align}
+$$</code>
+But
+<code>$$
+\begin{align}
+\mathbb{P}\left( R_{t+1}=r\:\middle|\: S_{t}=s \right) &amp;=
+\sum_{s'\in\mathcal{S}}\mathbb{P}\left( R_{t+1}=r,\, S_{t+1}=s'\:\middle|\: S_{t}=s \right) = \\
+&amp;= \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A(s)}}\mathbb{P}\left( R_{t+1}=r,\, S_{t+1}=s'\:\middle|\: S_{t}=s, A_{t}=a \right) \mathbb{P}\left( A_{t}=a\:\middle|\: S_{t}=s \right)= \\
+&amp;= \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A(s)}} p(r,\,s'\:|\:s,\,a)\pi(a\:|\:s)
+\end{align}
+$$</code>
+Thus
+<code>$$
+v_\pi(s) = \sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A(s)}} \left[r\,p(r,\,s'\:|\:s,\,a)\pi(a\:|\:s)\right] +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]
+$$</code>
+We can exchange the sum order and, keeping in mind that <code>$\sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}}p(r,\,s'\:|\:s,\,a)=1$</code> and <code>$\sum_{a\in\mathcal{A(s)}}\pi(a\:|\:s)=1$</code>, we get
+<code>$$
+\begin{align}
+v_\pi(s) &amp;= \sum_{a\in\mathcal{A(s)}}\pi(a\:|\:s)\sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}} p(r,\,s'\:|\:s,\,a)\bigg[r+\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]\bigg]
+\end{align}
+$$</code>
+This is called <strong>Bellman equation for <code>$v_\pi$</code></strong>.</p>
+
+<h1 id="optimal-policies">Optimal policies</h1>
+
+<p>Let <code>$v_*$</code> be defined as follows:
+<code>$$v_*(s) := \max_{\pi \: \text{policy}} v_\pi(s)$$</code>
+for all <code>$s\in\mathcal{S}$</code>.<br>
+<code>$v_*$</code> is called <strong>optimal state-value function</strong>.
 <br></p>
+
+<p>Let <code>$q_*$</code> be defined as follows:
+<code>$$q_*(s, a) := \max_{\pi \: \text{policy}} q_\pi(s, a)$$</code>
+for all <code>$s\in\mathcal{S}$</code>.<br>
+<code>$q_*$</code> is called <strong>optimal action-value function</strong>.
+<br></p>
+
+<p>A policy <code>$\pi$</code> is said to be <em>better than or equal</em> to a policy <code>$\pi'$</code> if <code>$v_\pi(s)\geq v_{\pi'}(s)$ for all $s\in\mathcal{S}$</code>. <br>
+This is a <strong>partial order</strong> relationship on the set of policies: not all policies can be compared! <br></p>
 
                 </section>
             </article>
@@ -216,31 +317,32 @@ $q</em>\pi(s, a)$ is also called the <strong>action-value function for policy $\
         <script src="http://lukemathwalker.github.io/js/jquery-2.2.4.min.js"></script>
 <script src="http://lukemathwalker.github.io/js/main.js"></script>
 <script src="http://lukemathwalker.github.io/js/highlight.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  MathJax.Hub.Config({
   tex2jax: {
     inlineMath: [['$','$'], ['\\(','\\)']],
-    displayMath: [['$$','$$'], ['\[','\]']],
+    displayMath: [['$$','$$']],
     processEscapes: true,
     processEnvironments: true,
     skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-    TeX: { equationNumbers: { autoNumber: "AMS" },
-	 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    TeX: { equationNumbers: { autoNumber: "all" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
   }
-});
-</script>
-<script type="text/x-mathjax-config">
+  });
   MathJax.Hub.Queue(function() {
-    // Fix <code> tags after MathJax finishes running. This is a
-    // hack to overcome a shortcoming of Markdown. Discussion at
-    // https://github.com/mojombo/jekyll/issues/199
     var all = MathJax.Hub.getAllJax(), i;
-    for(i = 0; i &lt; all.length; i += 1) {
-	all[i].SourceElement().parentNode.className += ' has-jax';
+    for(i = 0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
     }
-});
+  });
+
+  MathJax.Hub.Config({
+
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+  });
 </script>
+
 <script>hljs.initHighlightingOnLoad();</script>
 
 

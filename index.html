@@ -64,7 +64,7 @@
                     Reinforcement Learning: a comprehensive introduction [Part 1]
                     
                         
-                            <h2>Object Notation     State space $\mathcal{S}$   State at time $t$ $S_t$   Available actions in state $s$ $\mathcal{A}(s)$   Action taken at time $t$ $A_t$   Reward space $\mathcal{R}$   Reward after action $A_t$ $R_{t&#43;1}$    Let $ a\in\mathcal{A}(s) $, $ r\in\mathcal{R} $ and $s, s&amp;rsquo;\in\mathcal{S}$. Then: $$ p(s&amp;rsquo;, r:|: s,a):=\mathbb{P}\left(St=s&amp;rsquo;, R{t&#43;1}=r:|:S{t-1}=s, A{t-1}=a\right) $$ We have that (probability measure) $$ \sum_{s&amp;rsquo;\in\mathcal{S},:r\in\mathcal{R}}p(s&amp;rsquo;, r:|: s,a) = 1 $$ Let $r(s,a)$ define the expected reward for a state-action pair, namely $$ r(s,a) := \mathbb{E}\left[Rt:\middle|:S{t-1}=s,: A{t-1}=a\right] $$ Then $$ r(s,a) = \sum{r\in\mathcal{R}} rp(r:|:s, a) = \sum{r\in\mathcal{R}} r \sum{s&amp;rsquo;\in\mathcal{S}} p(r, s&amp;rsquo;:|:s, a) $$ Let $r(s,a,s&amp;rsquo;)$ define the expected reward for a state/action/next-state triple, namely $$ r(s,a,s&amp;rsquo;) := \mathbb{E}\left[Rt:\middle|:S{t-1}=s,: A{t-1}=a,:S{t}=s&amp;rsquo;\right] $$ Then $$ r(s,a,s&amp;rsquo;) = \sum{r\in\mathcal{R}} rp(r:|:s, a, s&amp;rsquo;) = \sum{r\in\mathcal{R}} r \sum_{s&amp;rsquo;\in\mathcal{S}} \frac{p(r, s&amp;rsquo;:|:s, a)}{p(s&amp;rsquo;:|:s,a)} $$ The return at time $t$, $G_t$, is defined as follows: $$ Gt := \sum{k=t&#43;1}^{T}\gamma^{k-t-1}R_k $$ where $\gamma\in[0, 1]$ is called discount rate and $T\in\mathbb{R}\cup{&#43;\infty}$.</h2>
+                            <h2>Notation and basic definitions    Object Notation     State space $\mathcal{S}$   State at time $t$ $S_t$   Available actions in state $s$ $\mathcal{A}(s)$   Action taken at time $t$ $A_t$   Reward space $\mathcal{R}$   Reward after action $A_t$ $R_{t&#43;1}$     Let $ a\in\mathcal{A}(s) $, $ r\in\mathcal{R} $ and $s, s&#39;\in\mathcal{S}$. Then: $$ p(s&#39;, r\:|\: s,a):=\mathbb{P}\left(S_t=s&#39;, R_{t&#43;1}=r\:|\:S_{t-1}=s, A_{t-1}=a\right) $$ We have that (probability measure) $$ \sum_{s&#39;\in\mathcal{S},\:r\in\mathcal{R}}p(s&#39;, r\:|\: s,a) = 1 $$  Let $r(s,a)$ define the expected reward for a state-action pair, namely $$ r(s,a) := \mathbb{E}\left[R_t\:\middle|\:S_{t-1}=s,\: A_{t-1}=a\right] $$ Then $$ r(s,a) = \sum_{r\in\mathcal{R}} rp(r\:|\:s, a) = \sum_{r\in\mathcal{R}} r \sum_{s&#39;\in\mathcal{S}} p(r, s&#39;\:|\:s, a) $$  Let $r(s,a,s&#39;)$ define the expected reward for a state/action/next-state triple, namely $$ r(s,a,s&#39;) := \mathbb{E}\left[R_t\:\middle|\:S_{t-1}=s,\: A_{t-1}=a,\:S_{t}=s&#39;\right] $$ Then $$ r(s,a,s&#39;) = \sum_{r\in\mathcal{R}} rp(r\:|\:s, a, s&#39;) = \sum_{r\in\mathcal{R}} r \sum_{s&#39;\in\mathcal{S}} \frac{p(r, s&#39;\:|\:s, a)}{p(s&#39;\:|\:s,a)} $$  The return at time $t$, $G_t$, is defined as follows: $$ G_t := \sum_{k=t&#43;1}^{T}\gamma^{k-t-1}R_k $$ where $\gamma\in[0, 1]$ is called discount rate and $T\in\mathbb{R}\cup\{&#43;\infty\}$.</h2>
                         
                     
                 </a>
@@ -110,31 +110,32 @@
     <script src="http://lukemathwalker.github.io/js/jquery-2.2.4.min.js"></script>
 <script src="http://lukemathwalker.github.io/js/main.js"></script>
 <script src="http://lukemathwalker.github.io/js/highlight.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  MathJax.Hub.Config({
   tex2jax: {
     inlineMath: [['$','$'], ['\\(','\\)']],
-    displayMath: [['$$','$$'], ['\[','\]']],
+    displayMath: [['$$','$$']],
     processEscapes: true,
     processEnvironments: true,
     skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-    TeX: { equationNumbers: { autoNumber: "AMS" },
-	 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    TeX: { equationNumbers: { autoNumber: "all" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
   }
-});
-</script>
-<script type="text/x-mathjax-config">
+  });
   MathJax.Hub.Queue(function() {
-    // Fix <code> tags after MathJax finishes running. This is a
-    // hack to overcome a shortcoming of Markdown. Discussion at
-    // https://github.com/mojombo/jekyll/issues/199
     var all = MathJax.Hub.getAllJax(), i;
-    for(i = 0; i &lt; all.length; i += 1) {
-	all[i].SourceElement().parentNode.className += ' has-jax';
+    for(i = 0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
     }
-});
+  });
+
+  MathJax.Hub.Config({
+
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+  });
 </script>
+
 <script>hljs.initHighlightingOnLoad();</script>
 
 

@@ -50,8 +50,8 @@
                     </h1>
                     <h2 class="headline">
                     Dec 28, 2017 21:36
-                    · 1880 words
-                    · 9 minute read
+                    · 1672 words
+                    · 8 minute read
                       <span class="tags">
                       
                       </span>
@@ -70,8 +70,6 @@
 <li><a href="#value-functions-and-optimality">Value functions and Optimality</a></li>
 <li><a href="#policy-evaluation">Policy evaluation</a></li>
 </ul></li>
-<li><a href="#bellman-equation">Bellman equation</a></li>
-<li><a href="#optimal-policies">Optimal policies</a></li>
 </ul>
 </nav>
                     </div>
@@ -328,57 +326,58 @@ $$</code>
 <code>$\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)$</code> can be computed if we know a perfect model of the environment, while <code>$b_{d_t(h_t)}(a)$</code> is entirely determined by our policy <code>$\pi=(d_1,d_2,\dots)$</code>. <br>
 Putting everything together we get:
 <code>$$
-v^t_\pi(s) = \mathbb{E}_{\pi}\left[R_{t+1}\:|\:H_t=h_t\right] +\gamma \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_\pi(h_t, s, a) \: b_{d_t(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s) 
+v^t_\pi(s) = \mathbb{E}_{\pi}\left[R_{t+1}\:|\:H_t=h_t\right] +\gamma \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_\pi(h_t, s, a) \: b_{d_t(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s)
 $$</code></p>
 
-<h1 id="bellman-equation">Bellman equation</h1>
+<!---
+# Bellman equation
 
-<p>The state-value function for a policy <code>$\pi$</code> satisfies a recursive relationship similar (in spirit) to the one satisfied by the return <code>$G_t$</code>. We have
-<code>$$
+The state-value function for a policy `$\pi$` satisfies a recursive relationship similar (in spirit) to the one satisfied by the return `$G_t$`. We have
+`$$
 \begin{align}
-v_\pi(s) &amp;= \mathbb{E}_{\pi}\left[G_t\:\middle|\:S_t=s\right]= \\
-&amp;= \mathbb{E}_{\pi}\left[R_{t+1} +\gamma G_{t+1}\:\middle|\:S_t=s\right]= \\
-&amp;= \mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:S_t=s\right] +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]= \\
-&amp;= \sum_{r\in\mathcal{R}}r\,\mathbb{P}\left( R_{t+1}=r\:\middle|\: S_{t}=s \right) +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]
+v_\pi(s) &= \mathbb{E}_{\pi}\left[G_t\:\middle|\:S_t=s\right]= \\
+&= \mathbb{E}_{\pi}\left[R_{t+1} +\gamma G_{t+1}\:\middle|\:S_t=s\right]= \\
+&= \mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:S_t=s\right] +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]= \\
+&= \sum_{r\in\mathcal{R}}r\,\mathbb{P}\left( R_{t+1}=r\:\middle|\: S_{t}=s \right) +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]
 \end{align}
-$$</code>
+$$`
 But
-<code>$$
+`$$
 \begin{align}
-\mathbb{P}\left( R_{t+1}=r\:\middle|\: S_{t}=s \right) &amp;=
+\mathbb{P}\left( R_{t+1}=r\:\middle|\: S_{t}=s \right) &=
 \sum_{s'\in\mathcal{S}}\mathbb{P}\left( R_{t+1}=r,\, S_{t+1}=s'\:\middle|\: S_{t}=s \right) = \\
-&amp;= \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A(s)}}\mathbb{P}\left( R_{t+1}=r,\, S_{t+1}=s'\:\middle|\: S_{t}=s, A_{t}=a \right) \mathbb{P}\left( A_{t}=a\:\middle|\: S_{t}=s \right)= \\
-&amp;= \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A(s)}} p(r,\,s'\:|\:s,\,a)\pi(a\:|\:s)
+&= \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A(s)}}\mathbb{P}\left( R_{t+1}=r,\, S_{t+1}=s'\:\middle|\: S_{t}=s, A_{t}=a \right) \mathbb{P}\left( A_{t}=a\:\middle|\: S_{t}=s \right)= \\
+&= \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A(s)}} p(r,\,s'\:|\:s,\,a)\pi(a\:|\:s)
 \end{align}
-$$</code>
+$$`
 Thus
-<code>$$
+`$$
 v_\pi(s) = \sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A(s)}} \left[r\,p(r,\,s'\:|\:s,\,a)\pi(a\:|\:s)\right] +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]
-$$</code>
-We can exchange the sum order and, keeping in mind that <code>$\sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}}p(r,\,s'\:|\:s,\,a)=1$</code> and <code>$\sum_{a\in\mathcal{A(s)}}\pi(a\:|\:s)=1$</code>, we get
-<code>$$
+$$`
+We can exchange the sum order and, keeping in mind that `$\sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}}p(r,\,s'\:|\:s,\,a)=1$` and `$\sum_{a\in\mathcal{A(s)}}\pi(a\:|\:s)=1$`, we get
+`$$
 \begin{align}
-v_\pi(s) &amp;= \sum_{a\in\mathcal{A(s)}}\pi(a\:|\:s)\sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}} p(r,\,s'\:|\:s,\,a)\bigg[r+\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]\bigg]
+v_\pi(s) &= \sum_{a\in\mathcal{A(s)}}\pi(a\:|\:s)\sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}} p(r,\,s'\:|\:s,\,a)\bigg[r+\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]\bigg]
 \end{align}
-$$</code>
-This is called <strong>Bellman equation for <code>$v_\pi$</code></strong>.</p>
+$$`
+This is called **Bellman equation for `$v_\pi$`**.
 
-<h1 id="optimal-policies">Optimal policies</h1>
+# Optimal policies
+Let `$v_*$` be defined as follows:
+`$$v_*(s) := \max_{\pi \: \text{policy}} v_\pi(s)$$`
+for all `$s\in\mathcal{S}$`.<br>
+`$v_*$` is called **optimal state-value function**.
+<br>
 
-<p>Let <code>$v_*$</code> be defined as follows:
-<code>$$v_*(s) := \max_{\pi \: \text{policy}} v_\pi(s)$$</code>
-for all <code>$s\in\mathcal{S}$</code>.<br>
-<code>$v_*$</code> is called <strong>optimal state-value function</strong>.
-<br></p>
+Let `$q_*$` be defined as follows:
+`$$q_*(s, a) := \max_{\pi \: \text{policy}} q_\pi(s, a)$$`
+for all `$s\in\mathcal{S}$`.<br>
+`$q_*$` is called **optimal action-value function**.
+<br>
 
-<p>Let <code>$q_*$</code> be defined as follows:
-<code>$$q_*(s, a) := \max_{\pi \: \text{policy}} q_\pi(s, a)$$</code>
-for all <code>$s\in\mathcal{S}$</code>.<br>
-<code>$q_*$</code> is called <strong>optimal action-value function</strong>.
-<br></p>
-
-<p>A policy <code>$\pi$</code> is said to be <em>better than or equal</em> to a policy <code>$\pi'$</code> if <code>$v_\pi(s)\geq v_{\pi'}(s)$ for all $s\in\mathcal{S}$</code>. <br>
-This is a <strong>partial order</strong> relationship on the set of policies: not all policies can be compared! <br></p>
+A policy `$\pi$` is said to be *better than or equal* to a policy `$\pi'$` if `$v_\pi(s)\geq v_{\pi'}(s)$ for all $s\in\mathcal{S}$`. <br>
+This is a **partial order** relationship on the set of policies: not all policies can be compared! <br>
+-->
 
                 </section>
             </article>

@@ -50,7 +50,7 @@
                     </h1>
                     <h2 class="headline">
                     Dec 28, 2017 21:36
-                    · 1532 words
+                    · 1533 words
                     · 8 minute read
                       <span class="tags">
                       
@@ -132,24 +132,24 @@ h_t=(h_{t-1}, a_t, s_t) \quad\quad\quad\quad t\in\{1, 2, \dots\}
 $$</code>
 The set of histories can be defined as
 <code>$$
-H_t=\prod_1^t (S\times A) \quad\quad t\in\{1, 2, \dots\}
+\mathcal{H}_t=\prod_1^t (\mathcal{S}\times \mathcal{A}) \quad\quad t\in\{1, 2, \dots\}
 $$</code>
 or, equivalenty,
 <code>$$
-H_t=H_{t-1}\times S \times A \quad\quad t\in\{1, 2, \dots\}
+\mathcal{H}_t=\mathcal{H}_{t-1}\times \mathcal{S}\times \mathcal{A} \quad\quad t\in\{1, 2, \dots\}
 $$</code>
 We can thus formalize the concept of history-dependent decision rule as a function
 <code>$$
-d_t: H_t \to \mathcal{P}(A)
+d_t: \mathcal{H}_t \to \mathcal{P}(A)
 $$</code>
-where <code>$\mathcal{P}(A)$</code> denotes the collection of probability distributions over the set of actions <code>$A$</code>. <br>
+where <code>$\mathcal{P}(A)$</code> denotes the collection of probability distributions over the set of actions <code>$\mathcal{A}$</code>. <br>
 We shall denote by <code>$b_{d_t}(a\,|\,h_t)$</code> or <code>$b_{d_t(h_t)}(a)$</code> the probability of taking action <code>$a$</code> if our system history up to time <code>$t$</code> is equal to <code>$h_t$</code>. <br></p>
 
 <p>We can also consider a <strong>deterministic history-dependent decision rule</strong> <code>$d_t$</code>, which can be seen as a function:
 <code>$$
-d_t: H_t \to A
+d_t: \mathcal{H}_t \to \mathcal{A}
 $$</code>
-or, equivalently, as a randomized history-dependent decision rule such that for each <code>$h_t$</code> there exists a unique <code>$a\in A$</code> with <code>$b_{d_t(h_t)}(a)=1$</code> and <code>$b_{d_t(h_t)}(a')=0$</code> for all <code>$a'\neq a$</code>.<br></p>
+or, equivalently, as a randomized history-dependent decision rule such that for each <code>$h_t$</code> there exists a unique <code>$a\in \mathcal{A}$</code> with <code>$b_{d_t(h_t)}(a)=1$</code> and <code>$b_{d_t(h_t)}(a')=0$</code> for all <code>$a'\neq a$</code>.<br></p>
 
 <p>If we denote the set of randomized history-dependent decision rules at time <code>$t$</code> as <code>$D_t^{HR}$</code> and the set of deterministic history-dependent decision rule as <code>$D_t^{HD}$</code> we clearly have, according to our last observation,
 <code>$$
@@ -157,11 +157,11 @@ D_t^{HD} \subset D_t^{HR}
 $$</code></p>
 
 <p>Considering the whole history of the system up to the current state is certainly the most general viewpoint we can choose before committing to a certain action. Nonetheless it is computationally very expensive to keep track of a function whose input dimension grows exponentially in time: consider, for example, a state space <code>$\mathcal{S}$</code> with five elements equipped with an action set <code>$\mathcal{A}$</code> composed of three choices. <br>
-For <code>$t=1$</code> we have 5 elements in <code>$H_1$</code> (we take <code>$t=1$</code> as starting state). <br>
-For <code>$t=2$</code> we have 5x3x5=75 elements in <code>$H_2$</code>. <br>
+For <code>$t=1$</code> we have 5 elements in <code>$\mathcal{H}_1$</code> (we take <code>$t=1$</code> as starting state). <br>
+For <code>$t=2$</code> we have 5x3x5=75 elements in <code>$\mathcal{H}_2$</code>. <br>
 For an arbitrary <code>$t\in\mathbb{N}$</code> we have
 <code>$$
-|H_t| = 5^t 3^{t-1}
+|\mathcal{H}_t| = 5^t 3^{t-1}
 $$</code>
 which, you surely agree with me, is going to become problematic soon enough, even if the system is ridiculously small. <br></p>
 
@@ -227,13 +227,13 @@ The set of randomized stationary policies is denoted by <code>$\Pi^{SR}$</code>,
 
 <p>How do we measure the performances of a policy? <br>
 In a Reinforcement Learning context, every action is followed by a reward (positive or negative). To measure the overall performance of a policy we need to combine all these rewards together - this is usually called <strong>return</strong> in the literature. <br>
-We can craft arbitrarily complex return criteria, but in this blog post we are going to stick to most common one: discounted cumulative return. <br>
-If <code>$R_{t+1}$</code> denotes the reward obtained after action <code>$A_t$</code> we can define the discounted cumulative return at time <code>$t$</code>, <code>$G_t$</code>, as
+We can craft arbitrarily complex return criteria, but in this blog post we are going to stick to the most common one: discounted cumulative return. <br>
+If <code>$R_{t+1}$</code> denotes the reward obtained after action <code>$A_t$</code> we can define the <strong>discounted cumulative return</strong> at time <code>$t$</code>, <code>$G_t$</code>, as
 <code>$$
 G_t := \sum_{k=t+1}^{T}\gamma^{k-t-1}R_k
 $$</code>
 where <code>$\gamma\in[0, 1]$</code> is called <strong>discount rate</strong> and <code>$T\in\mathbb{R}\cup\{+\infty\}$</code>. <br>
-If we are dealing with a finite time horizon <code>$T$</code> then we can simply set <code>$\gamma=1$</code> and consider the cumulative return, i.e.
+If we are dealing with a finite time horizon <code>$T$</code> then we can simply set <code>$\gamma=1$</code> and consider the <strong>cumulative return</strong>, i.e.
 <code>$$
 G_t := \sum_{k=t+1}^{T}R_k
 $$</code>
@@ -274,8 +274,8 @@ v^1_\pi(s) &gt; v^1_{\pi'}(s) \quad \forall s\in\mathcal{S}
 $$</code>
 for all <code>$\pi'\in\Pi^{HR}$</code> [remember that randomized history-dependent policies are the most general class!].</p>
 
-<p>It is important to remark that <code>$v_{(\cdot)}$</code> is an <em>expected value</em> - even if a policy <code>$\pi$</code> is better <em>on average</em> than a policy <code>$\pi'$</code> starting from a state <code>$s$</code> it might happen than an experiment using policy <code>$\pi$</code> produces a higher return compared to an experiment using policy <code>$\pi'$</code>: stochasticity baby! <br>
-But we are going to neglect these issues for the moment, focusing on the value function.</p>
+<p>It is important to remark that <code>$v_{(\cdot)}$</code> is an <em>expected value</em> - even if a policy <code>$\pi$</code> is better <em>on average</em> than a policy <code>$\pi'$</code> it might still happen than an experiment using policy <code>$\pi$</code> produces a higher return compared to an experiment using policy <code>$\pi'$</code>: stochasticity baby! <br>
+But we are going to neglect these issues for the moment, focusing on the value function as a measure of optimality.</p>
 
 <!---
 The value of taking action $a$ in state $s$ under a policy `$\pi$` is the expected return when starting in `$s$`, taking action $a$ and therefore following `$\pi$`. We shall denote it by `$q_\pi(s, a)$`. Formally:

@@ -50,8 +50,8 @@
                     </h1>
                     <h2 class="headline">
                     Dec 28, 2017 21:36
-                    · 1231 words
-                    · 6 minute read
+                    · 1418 words
+                    · 7 minute read
                       <span class="tags">
                       
                       </span>
@@ -66,6 +66,7 @@
 <ul>
 <li><a href="#decision-rules">Decision rules</a></li>
 <li><a href="#policies-1">Policies</a></li>
+<li><a href="#returns">Returns</a></li>
 <li><a href="#value-functions">Value functions</a></li>
 </ul></li>
 <li><a href="#bellman-equation">Bellman equation</a></li>
@@ -113,21 +114,6 @@ $$`
 Then
 `$$
 r(s,a,s') = \sum_{r\in\mathcal{R}} rp(r\:|\:s, a, s') = \sum_{r\in\mathcal{R}} r \sum_{s'\in\mathcal{S}} \frac{p(r, s'\:|\:s, a)}{p(s'\:|\:s,a)}
-$$`
-<br>
-- The return at time $t$, $G_t$, is defined as follows:
-`$$
-G_t := \sum_{k=t+1}^{T}\gamma^{k-t-1}R_k
-$$`
-where `$\gamma\in[0, 1]$` is called **discount rate** and `$T\in\mathbb{R}\cup\{+\infty\}$`. <br>
-We implicitly assume that if `$\gamma=1$` then `$T\neq +\infty$`, and vice versa. <br>
-We can derive, just from the definition, an easy property of the return `$G_t$`:
-`$$
-G_t = \sum_{k=t+1}^{T}\gamma^{k-t-1}R_k = R_{t+1} + \gamma\sum_{k=t+2}^{T}\gamma^{k-t-2}R_k = R_{t+1} + \gamma G_{t+1}
-$$`
-Observe also that if `$T=+\infty$` and `$R_t$` is bounded for every `$t$` - namely, there exists `$M>0$` such that `$|R_t|\leq M$` for all `$t$` - we still have that `$G_t$` is finite. In fact:
-`$$
-|G_t| \leq \sum_{k=t+1}^{+\infty}\left|\gamma^{k-t-1}R_k\right| = \sum_{k=t+1}^{+\infty}\gamma^{k-t-1}\left|R_k\right| \leq M \sum_{k=t+1}^{+\infty}\gamma^{k-t-1} = \frac{M}{1-\gamma} < +\infty
 $$`
 <br>
 -->
@@ -218,7 +204,7 @@ We shall always assume that policies are composed of decision rules of the same 
 <li><strong>deterministic markovian policies</strong>, <code>$\Pi^{MD}$</code>.</li>
 </ul>
 
-<p>If storing a history-dependent decision rule was troublesome, just meditate for a second on the problem of storing a history-dependent policy! <br>
+<p>If storing a <em>history-dependent decision rule</em> was troublesome, just meditate for a second on the problem of storing a <em>history-dependent policy</em>! <br>
 Unfortunately even a deterministic markovian policy is fearsome to store if we are considering a potentially infinite number of time steps. <br></p>
 
 <p>This is why we introduce a new family of policies: a policy <code>$\pi$</code> is said to be a <strong>randomized stationary policy</strong> if <code>$d_t=d$</code> for all <code>$t\in\mathbb{N}$</code> with <code>$d\in D^{MR}$</code>, i.e.
@@ -236,6 +222,33 @@ The set of randomized stationary policies is denoted by <code>$\Pi^{SR}$</code>,
 </ul>
 
 <p>Before engaging in this interesting discussion we should define what we mean by <strong>optimal</strong> when we are speaking of policies.</p>
+
+<h2 id="returns">Returns</h2>
+
+<p>How do we measure the performances of a policy? <br>
+In a Reinforcement Learning context, every action is followed by a reward (positive or negative). To measure the overall performance of a policy we need to combine all these rewards together - this is usually called <strong>return</strong> in the literature. <br>
+We can craft arbitrarily complex return criteria, but in this blog post we are going to stick to most common one: discounted cumulative return. <br>
+If <code>$R_{t+1}$</code> denotes the reward obtained after action <code>$A_t$</code> we can define the discounted cumulative return at time <code>$t$</code>, <code>$G_t$</code>, as
+<code>$$
+G_t := \sum_{k=t+1}^{T}\gamma^{k-t-1}R_k
+$$</code>
+where <code>$\gamma\in[0, 1]$</code> is called <strong>discount rate</strong> and <code>$T\in\mathbb{R}\cup\{+\infty\}$</code>. <br>
+If we are dealing with a finite time horizon <code>$T$</code> then we can simply set <code>$\gamma=1$</code> and consider the cumulative return, i.e.
+<code>$$
+G_t := \sum_{k=t+1}^{T}R_k
+$$</code>
+But this setting becomes problematic if the time horizon is (potentially) infinite. Introducing a discount rate allows us to associate a bigger weight to closer rewards as well as ensuring that the overall return <code>$G_t$</code> remains finite if our rewards are bounded:
+<code>$$
+|G_t| \leq \sum_{k=t+1}^{+\infty}\left|\gamma^{k-t-1}R_k\right| = \sum_{k=t+1}^{+\infty}\gamma^{k-t-1}\left|R_k\right| \leq M \sum_{k=t+1}^{+\infty}\gamma^{k-t-1} = \frac{M}{1-\gamma} &lt; +\infty
+$$</code>
+assuming that there exists <code>$M&gt;0$</code> such that <code>$|R_t|\leq M$</code> for all <code>$t$</code>. <br>
+We implicitly assume that if <code>$\gamma=1$</code> then <code>$T\neq +\infty$</code>, and vice versa. <br>
+<!---
+We can derive, just from the definition, an easy property of the return `$G_t$`:
+`$$
+G_t = \sum_{k=t+1}^{T}\gamma^{k-t-1}R_k = R_{t+1} + \gamma\sum_{k=t+2}^{T}\gamma^{k-t-2}R_k = R_{t+1} + \gamma G_{t+1}
+$$`
+--></p>
 
 <h2 id="value-functions">Value functions</h2>
 

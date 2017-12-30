@@ -50,8 +50,8 @@
                     </h1>
                     <h2 class="headline">
                     Dec 28, 2017 21:36
-                    · 1418 words
-                    · 7 minute read
+                    · 1532 words
+                    · 8 minute read
                       <span class="tags">
                       
                       </span>
@@ -67,7 +67,7 @@
 <li><a href="#decision-rules">Decision rules</a></li>
 <li><a href="#policies-1">Policies</a></li>
 <li><a href="#returns">Returns</a></li>
-<li><a href="#value-functions">Value functions</a></li>
+<li><a href="#value-functions-and-optimality">Value functions and Optimality</a></li>
 </ul></li>
 <li><a href="#bellman-equation">Bellman equation</a></li>
 <li><a href="#optimal-policies">Optimal policies</a></li>
@@ -237,7 +237,7 @@ If we are dealing with a finite time horizon <code>$T$</code> then we can simply
 <code>$$
 G_t := \sum_{k=t+1}^{T}R_k
 $$</code>
-But this setting becomes problematic if the time horizon is (potentially) infinite. Introducing a discount rate allows us to associate a bigger weight to closer rewards as well as ensuring that the overall return <code>$G_t$</code> remains finite if our rewards are bounded:
+But this setting becomes problematic if the time horizon is (potentially) infinite. <br> Introducing a discount rate <code>$\gamma\in[0,1)$</code> allows us to associate a bigger weight to closer rewards as well as ensuring that the overall return <code>$G_t$</code> remains finite if our rewards are bounded:
 <code>$$
 |G_t| \leq \sum_{k=t+1}^{+\infty}\left|\gamma^{k-t-1}R_k\right| = \sum_{k=t+1}^{+\infty}\gamma^{k-t-1}\left|R_k\right| \leq M \sum_{k=t+1}^{+\infty}\gamma^{k-t-1} = \frac{M}{1-\gamma} &lt; +\infty
 $$</code>
@@ -250,21 +250,41 @@ G_t = \sum_{k=t+1}^{T}\gamma^{k-t-1}R_k = R_{t+1} + \gamma\sum_{k=t+2}^{T}\gamma
 $$`
 --></p>
 
-<h2 id="value-functions">Value functions</h2>
+<h2 id="value-functions-and-optimality">Value functions and Optimality</h2>
 
-<p>The value of a state <code>$s$</code> under a policy <code>$\pi$</code> is the expected return when starting in <code>$s$</code> and following <code>$\pi$</code> thereafter. We shall denote it by <code>$v_\pi(s)$</code>. Formally:
+<p>We can finally define what a policy is <em>worth</em> by looking at the expected return when following that sequence of decision rules! <br>
+We encode this concept into the so-called <strong>value function</strong>. <br></p>
+
+<p>The value of a history <code>$h_t$</code> under a policy <code>$\pi$</code> is the expected return when starting in <code>$h_t$</code> and following <code>$\pi$</code> thereafter. We shall denote it by <code>$v_\pi(h_t)$</code>. Formally:
 <code>$$
-v_\pi(s):= \mathbb{E}_{\pi}\left[G_t\:\middle|\:S_t=s\right]
+v^t_\pi(h_t):= \mathbb{E}_{\pi}\left[G_t\:\middle|\:H_t=h_t\right]
 $$</code>
-<code>$v_\pi$</code> is also called the <strong>state-value function for policy <code>$\pi$</code></strong>.
+<code>$v^t_\pi$</code> is called the <strong>history-value function for policy <code>$\pi$</code> at time <code>$t$</code></strong>.
 <br></p>
 
-<p>The value of taking action $a$ in state $s$ under a policy <code>$\pi$</code> is the expected return when starting in <code>$s$</code>, taking action $a$ and therefore following <code>$\pi$</code>. We shall denote it by <code>$q_\pi(s, a)$</code>. Formally:
+<p>We can thus affirm that a policy <code>$\pi$</code> is better than a policy <code>$\pi'$</code> if
 <code>$$
+v^1_\pi(s) &gt; v^1_{\pi'}(s) \quad \forall s\in\mathcal{S}
+$$</code>
+where <code>$s$</code> is the initial state of our system. <br></p>
+
+<p>A policy <code>$\pi$</code> is said to be <strong>optimal</strong> if
+<code>$$
+v^1_\pi(s) &gt; v^1_{\pi'}(s) \quad \forall s\in\mathcal{S}
+$$</code>
+for all <code>$\pi'\in\Pi^{HR}$</code> [remember that randomized history-dependent policies are the most general class!].</p>
+
+<p>It is important to remark that <code>$v_{(\cdot)}$</code> is an <em>expected value</em> - even if a policy <code>$\pi$</code> is better <em>on average</em> than a policy <code>$\pi'$</code> starting from a state <code>$s$</code> it might happen than an experiment using policy <code>$\pi$</code> produces a higher return compared to an experiment using policy <code>$\pi'$</code>: stochasticity baby! <br>
+But we are going to neglect these issues for the moment, focusing on the value function.</p>
+
+<!---
+The value of taking action $a$ in state $s$ under a policy `$\pi$` is the expected return when starting in `$s$`, taking action $a$ and therefore following `$\pi$`. We shall denote it by `$q_\pi(s, a)$`. Formally:
+`$$
 q_\pi(s, a):= \mathbb{E}_{\pi}\left[G_t\:\middle|\:S_t=s,\,A_t=a\right]
-$$</code>
-<code>$q_\pi(s, a)$</code> is also called the <strong>action-value function for policy <code>$\pi$</code></strong>.
-<br></p>
+$$`
+`$q_\pi(s, a)$` is also called the **action-value function for policy `$\pi$`**.
+<br>
+-->
 
 <h1 id="bellman-equation">Bellman equation</h1>
 

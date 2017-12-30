@@ -50,8 +50,8 @@
                     </h1>
                     <h2 class="headline">
                     Dec 28, 2017 21:36
-                    · 1533 words
-                    · 8 minute read
+                    · 1880 words
+                    · 9 minute read
                       <span class="tags">
                       
                       </span>
@@ -68,6 +68,7 @@
 <li><a href="#policies-1">Policies</a></li>
 <li><a href="#returns">Returns</a></li>
 <li><a href="#value-functions-and-optimality">Value functions and Optimality</a></li>
+<li><a href="#policy-evaluation">Policy evaluation</a></li>
 </ul></li>
 <li><a href="#bellman-equation">Bellman equation</a></li>
 <li><a href="#optimal-policies">Optimal policies</a></li>
@@ -259,10 +260,10 @@ We encode this concept into the so-called <strong>value function</strong>. <br><
 <code>$$
 v^t_\pi(h_t):= \mathbb{E}_{\pi}\left[G_t\:\middle|\:H_t=h_t\right]
 $$</code>
-<code>$v^t_\pi$</code> is called the <strong>history-value function for policy <code>$\pi$</code> at time <code>$t$</code></strong>.
-<br></p>
+<code>$v^t_\pi$</code> is called the <strong>history-value function for policy <code>$\pi$</code> at time <code>$t$</code></strong>. <br>
+<code>$v^1_\pi$</code>, instead, is called the <strong>state-value function for policy <code>$\pi$</code></strong> - it will be extremely important for stationary policies. <br></p>
 
-<p>We can thus affirm that a policy <code>$\pi$</code> is better than a policy <code>$\pi'$</code> if
+<p>Using the concept of state-value function we can affirm that a policy <code>$\pi$</code> is better than a policy <code>$\pi'$</code> if
 <code>$$
 v^1_\pi(s) &gt; v^1_{\pi'}(s) \quad \forall s\in\mathcal{S}
 $$</code>
@@ -274,8 +275,9 @@ v^1_\pi(s) &gt; v^1_{\pi'}(s) \quad \forall s\in\mathcal{S}
 $$</code>
 for all <code>$\pi'\in\Pi^{HR}$</code> [remember that randomized history-dependent policies are the most general class!].</p>
 
-<p>It is important to remark that <code>$v_{(\cdot)}$</code> is an <em>expected value</em> - even if a policy <code>$\pi$</code> is better <em>on average</em> than a policy <code>$\pi'$</code> it might still happen than an experiment using policy <code>$\pi$</code> produces a higher return compared to an experiment using policy <code>$\pi'$</code>: stochasticity baby! <br>
-But we are going to neglect these issues for the moment, focusing on the value function as a measure of optimality.</p>
+<p>It is important to remark that <code>$v_{(\cdot)}$</code> is an <em>expected value</em> - even if a policy <code>$\pi$</code> is better <em>on average</em> than a policy <code>$\pi'$</code> it might still happen than an experiment using policy <code>$\pi$</code> produces a higher return compared to an experiment using policy <code>$\pi'$</code>: stochasticity baby! <br></p>
+
+<p>Before embarking on the quest for optimality it is probably better to show a procedure to actually compute the state-value and history-value functions of a policy.</p>
 
 <!---
 The value of taking action $a$ in state $s$ under a policy `$\pi$` is the expected return when starting in `$s$`, taking action $a$ and therefore following `$\pi$`. We shall denote it by `$q_\pi(s, a)$`. Formally:
@@ -285,6 +287,49 @@ $$`
 `$q_\pi(s, a)$` is also called the **action-value function for policy `$\pi$`**.
 <br>
 -->
+
+<h2 id="policy-evaluation">Policy evaluation</h2>
+
+<p>Let&rsquo;s start with a property of the discounted cumulative return. <br>
+We can derive, just by using its definition, the following equation:
+<code>$$
+G_t = \sum_{k=t+1}^{T}\gamma^{k-t-1}R_k = R_{t+1} + \gamma\sum_{k=t+2}^{T}\gamma^{k-t-2}R_k = R_{t+1} + \gamma G_{t+1}
+$$</code>
+We can leverage it to get a similar relationship for history-value functions. <br> We have
+<code>$$
+\begin{align}
+v^t_\pi(s) &amp;= \mathbb{E}_{\pi}\left[G_t\:\middle|\:H_t=h_t\right]= \\
+&amp;= \mathbb{E}_{\pi}\left[R_{t+1} +\gamma G_{t+1}\:\middle|\:H_t=h_t\right]= \\
+&amp;= \mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:H_t=h_t\right] +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:H_t=h_t\right]
+\end{align}
+$$</code>
+Our rewards are markovian - they only depend on the current system state. So:
+<code>$$
+\mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:H_t=h_t\right] = \mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:S_t=s_t\right]
+$$</code>
+and this quantity can be computed assuming that we know the way the environment reacts to the agent behaviour. <br>
+Let&rsquo;s take a closer look at the second term:
+<code>$$
+\begin{align}
+\mathbb{E}_{\pi}\left[ G_{t+1} \: | \: H_t=h_t \right] &amp;= \sum_g g\mathbb{P}(G_{t+1} = g \: | \: H_t = h_t) = \\
+&amp;= \sum_g g \bigg[ \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}}\mathbb{P}\big(G_{t+1}=g\:| \: H_{t+1} = (h_t, s, a)\big)\mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big) \bigg] = \\
+&amp;= \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} \mathbb{E}_{\pi}\left[ G_{t+1} \: | \: H_{t+1}=(h_t, s, a) \right] \mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big) = \\
+&amp; = \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_\pi(h_t, s, a) \mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big)
+\end{align}
+$$</code>
+We can simplify it even further observing that:
+<code>$$
+\begin{align}
+\mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big) &amp;= \mathbb{P}(S_{t+1} = s, A_{t}=a \:| \: H_t = h_t) \\
+&amp;= \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s)\mathbb{P}(A_{t}=a \: | \: H_t = h_t)= \\
+&amp;= \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s) b_{d_t(h_t)}(a)
+\end{align}
+$$</code>
+<code>$\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)$</code> can be computed if we know a perfect model of the environment, while <code>$b_{d_t(h_t)}(a)$</code> is entirely determined by our policy <code>$\pi=(d_1,d_2,\dots)$</code>. <br>
+Putting everything together we get:
+<code>$$
+v^t_\pi(s) = \mathbb{E}_{\pi}\left[R_{t+1}\:|\:H_t=h_t\right] +\gamma \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_\pi(h_t, s, a) \: b_{d_t(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s) 
+$$</code></p>
 
 <h1 id="bellman-equation">Bellman equation</h1>
 

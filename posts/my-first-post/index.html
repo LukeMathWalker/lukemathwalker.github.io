@@ -7,7 +7,7 @@
 		
 		<meta name="author" content="Luca Palmieri">
 		<meta name="description" content="A personal blog focused on AI content and tutorials.">
-		<meta name="generator" content="Hugo 0.31.1" />
+		<meta name="generator" content="Hugo 0.32.1" />
 		<title>Reinforcement Learning: a comprehensive introduction [Part 1] &middot; Travel journal of an AI adventure</title>
 		<link rel="shortcut icon" href="http://lukemathwalker.github.io/images/favicon.ico">
 		<link rel="stylesheet" href="http://lukemathwalker.github.io/css/style.css">
@@ -50,8 +50,8 @@
                     </h1>
                     <h2 class="headline">
                     Dec 28, 2017 21:36
-                    · 1672 words
-                    · 8 minute read
+                    · 1923 words
+                    · 10 minute read
                       <span class="tags">
                       
                       </span>
@@ -68,7 +68,10 @@
 <li><a href="#policies-1">Policies</a></li>
 <li><a href="#returns">Returns</a></li>
 <li><a href="#value-functions-and-optimality">Value functions and Optimality</a></li>
-<li><a href="#policy-evaluation">Policy evaluation</a></li>
+<li><a href="#policy-evaluation">Policy evaluation</a>
+<ul>
+<li><a href="#policy-evaluation-for-fixed-finite-time-horizons">Policy evaluation for fixed &amp; finite time-horizons</a></li>
+</ul></li>
 </ul></li>
 </ul>
 </nav>
@@ -296,7 +299,7 @@ $$</code>
 We can leverage it to get a similar relationship for history-value functions. <br> We have
 <code>$$
 \begin{align}
-v^t_\pi(s) &amp;= \mathbb{E}_{\pi}\left[G_t\:\middle|\:H_t=h_t\right]= \\
+v^t_\pi(h_t) &amp;= \mathbb{E}_{\pi}\left[G_t\:\middle|\:H_t=h_t\right]= \\
 &amp;= \mathbb{E}_{\pi}\left[R_{t+1} +\gamma G_{t+1}\:\middle|\:H_t=h_t\right]= \\
 &amp;= \mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:H_t=h_t\right] +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:H_t=h_t\right]
 \end{align}
@@ -311,6 +314,7 @@ Let&rsquo;s take a closer look at the second term:
 \begin{align}
 \mathbb{E}_{\pi}\left[ G_{t+1} \: | \: H_t=h_t \right] &amp;= \sum_g g\mathbb{P}(G_{t+1} = g \: | \: H_t = h_t) = \\
 &amp;= \sum_g g \bigg[ \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}}\mathbb{P}\big(G_{t+1}=g\:| \: H_{t+1} = (h_t, s, a)\big)\mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big) \bigg] = \\
+&amp;= \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} \bigg[ \sum_g g \mathbb{P}\big(G_{t+1}=g\:| \: H_{t+1} = (h_t, s, a)\big)\bigg] \mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big)  = \\
 &amp;= \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} \mathbb{E}_{\pi}\left[ G_{t+1} \: | \: H_{t+1}=(h_t, s, a) \right] \mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big) = \\
 &amp; = \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_\pi(h_t, s, a) \mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big)
 \end{align}
@@ -319,15 +323,34 @@ We can simplify it even further observing that:
 <code>$$
 \begin{align}
 \mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big) &amp;= \mathbb{P}(S_{t+1} = s, A_{t}=a \:| \: H_t = h_t) \\
-&amp;= \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s)\mathbb{P}(A_{t}=a \: | \: H_t = h_t)= \\
-&amp;= \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s) b_{d_t(h_t)}(a)
+&amp;= \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\mathbb{P}(A_{t}=a \: | \: H_t = h_t)= \\
+&amp;= \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t) b_{d_t(h_t)}(a)
 \end{align}
 $$</code>
 <code>$\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)$</code> can be computed if we know a perfect model of the environment, while <code>$b_{d_t(h_t)}(a)$</code> is entirely determined by our policy <code>$\pi=(d_1,d_2,\dots)$</code>. <br>
 Putting everything together we get:
 <code>$$
-v^t_\pi(s) = \mathbb{E}_{\pi}\left[R_{t+1}\:|\:H_t=h_t\right] +\gamma \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_\pi(h_t, s, a) \: b_{d_t(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s)
-$$</code></p>
+v^t_\pi(h_t) = \mathbb{E}_{\pi}\left[R_{t+1}\:|\:H_t=h_t\right] +\gamma \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_\pi(h_t, s, a) \: b_{d_t(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)
+$$</code>
+We have thus found out that we can compute <code>$v^t_\pi$</code> once we know <code>$v^{t+1}_\pi$</code>. <br>
+If <code>$T$</code>, the time horizon of our experiments, is potentially infinite then this hierarchy of equations keeps going on and on. If <code>$T$</code>, instead, is a finite and fixed number we can use the previous relation to sketch a first policy evaluation algorithm.</p>
+
+<h3 id="policy-evaluation-for-fixed-finite-time-horizons">Policy evaluation for fixed &amp; finite time-horizons</h3>
+
+<p>Suppose, as we just suggested, that <code>$T$</code> is a fixed and finite natural number. <br />
+This means that <code>$S_T$</code> is the <em>terminal</em> state of our agent: no actions to be taken once we reach that point. <br />
+We assume that there exists a terminal reward function, <code>$r_T:\mathcal{S}\to\mathbb{R}$</code>: if <code>$S_T=s$</code> is the terminal state of the agent then he is granted a reward <code>$r_T(s)$</code>. <br>
+Then
+<code>$$
+\begin{align}
+v^{T-1}_\pi(h_{T-1}) &amp;= \mathbb{E}_{\pi}\left[R_{T}\:|\:H_{T-1}=h_{T-1}\right] = \\
+&amp;= \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} r_T(s)\: \mathbb{P}\big(H_{T} = (h_{T-1}, s, a)\:| \: H_{T-1} = h_{T-1}\big) = \\
+&amp;= \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} r_T(s)\: b_{d_t(h_t)}(a) \:\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)
+\end{align}
+$$</code>
+We have thus computed <code>$v^{T-1}_\pi(h_{T-1})$</code>, which can in turn be used to compute <code>$v^{T-1}_\pi(h_{T-2})$</code>! <br>
+Iterating we reach <code>$v^{1}_\pi(s_{1})$</code> - we have found the policy state-value function. <br>
+Using this procedure we can compute the policy state-value function of arbitrary complex randomized history-dependent policies as long as the time-horizon is fixed and finite and we have a perfect knowledge of the agent&rsquo;s environment.</p>
 
 <!---
 # Bellman equation
@@ -420,7 +443,7 @@ This is a **partial order** relationship on the set of policies: not all policie
     
     <p class="small">
     
-       © Copyright 2017 <i class="fa fa-heart" aria-hidden="true"></i> Luca Palmieri
+       © Copyright 2018 <i class="fa fa-heart" aria-hidden="true"></i> Luca Palmieri
     
     </p>
     <p class="small">

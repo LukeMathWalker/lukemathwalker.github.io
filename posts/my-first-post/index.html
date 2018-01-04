@@ -50,8 +50,8 @@
                     </h1>
                     <h2 class="headline">
                     Dec 28, 2017 21:36
-                    · 2060 words
-                    · 10 minute read
+                    · 2380 words
+                    · 12 minute read
                       <span class="tags">
                       
                       </span>
@@ -352,17 +352,60 @@ A pseudo-code formalization of this procedure looks as follows
 
 <p>We stated that a policy <code>$\pi$</code> is <em>optimal</em> if <code>$v_{\pi}^1(s)\geq v_{\alpha}^1(s)$</code> for all <code>$\alpha\in\Pi^{HR}$</code> and for all <code>$s\in\mathcal{S}$</code>. <br>
 A function (not a policy, be careful!) satisfying this property can be easily defined:
-<code>$$\begin{equation}
+<code>$$\begin{equation}\label{optimal_naive_sup}
 v^t_* (h_t) := \sup_{\pi\in\Pi^{HR}} v^t_\pi (h_t) \quad \forall h_t \in\mathcal{H}_t
 \end{equation}$$</code>
 The set of randomized history-dependent policies is infinite (and uncountable): we cannot state the previous definition using a <code>max</code>. <br>
-Even though this definition is pretty straight-forward it does not provide, by itself, a way to actually <strong>compute</strong> <code>$v^t_*$</code>. <br>
-Luckily enough, it can be proved <em>(Puterman - Th. 4.3.2)</em> that <code>$v^t_*$</code> is a solution of the following <strong>system</strong> of equations:
+Even though equation <code>$\ref{optimal_naive_sup}$</code> is pretty straight-forward it does not provide, by itself, a way to actually <strong>compute</strong> <code>$v^t_*$</code>. <br>
+Luckily enough, it can be proved <em>(Puterman - Th. 4.3.2)</em> that <code>$\{v^t_*\}_{t=1}^T$</code> are a solution of the following <strong>system</strong> of equations:
 <code>$$\begin{align}
 &amp;\forall t\in\{1,\dots, T-1\}: \\
 &amp;v^t_*(h_t) = \max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:S_t=s_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\} \\
 &amp;v^T_*(h_T) = r_T(s_T)
-\end{align}$$</code></p>
+\end{align}$$</code>
+We have used a <code>max</code> over <code>$\mathcal{A}$</code> because we are assuming that the set of possible actions is finite. <br>
+These equations are usually referred as <strong>optimality equations</strong>. <br>
+We shall see that they can be used to actually compute <code>$v^t_*$</code>, which for the moment stands as an upper-bound on the history-value function of our hypothetical optimal policies. If we could prove that there exists a policy <code>$\pi^*$</code> such that
+<code>$$\begin{equation}
+v^t_*(h_t) = v^t_{\pi^*}(h_t) \quad\quad \forall h_t\in\mathcal{H}_t
+\end{equation}$$</code>
+then we would be a good deal closer to the solution of the optimality problem for finite and fixed time-horizon systems. <br>
+Puterman comes in our aid once again, with theorem 4.3.4. <br></p>
+
+<p>Let <code>$\{v^t_*\}_{t=1}^T$</code> be a solution of the optimality equations and suppose that <code>$\pi^*=(d_1^*, \dots, d_{T-1}^*)\in\Pi^{HR}$</code> satisfies
+<code>$$\begin{equation}
+\begin{split}
+&amp;\mathbb{E}_{\pi^*}\left[R_{t+1}\:|\:H_t=h_t\right] + \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_{\pi^*}(h_t, s, a) \: b_{d_t^*(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t) = \\ &amp;\quad\quad\max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:S_t=s_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\}
+\end{split}
+\end{equation}$$</code>
+for <code>$t\in\{1,\dots,T\}$</code>. Then
+<code>$$\begin{equation}
+v^t_*(h_t) = v^t_{\pi^*}(h_t) \quad \quad \forall h_t \in\mathcal{H}_t, \: \forall t\in\{1,\dots,T\}
+\end{equation}$$</code>
+which implies that <code>$\pi^*$</code> is an <strong>optimal policy</strong>. <br></p>
+
+<p>This result can be further improved using a simple calculus lemma: let <code>$\{w_i\}_{i=1}^K$</code> be a collection of real numbers and let <code>$\{q_i\}_{i=1}^K$</code> be a probability distribution over <code>$\{1,\dots, K\}$</code> (i.e. <code>$q_i\in[0,1]$</code> and <code>$\sum_i q_i=1$</code>); then
+<code>$$\begin{equation}
+\max \{w_i\}_{i=1}^K \geq \sum_{i=1}^K q_i w_i
+\end{equation}$$</code></p>
+
+<p>For each <code>$t\in\{1,\dots, T-1\}$</code> pick <code>$a_t^*\in\mathcal{A}$</code> such that
+<code>$$\begin{equation}
+a_t^* \in \underset{a\in\mathcal{A}}{\mathrm{argmax}} \bigg\{\mathbb{E}\left[R_{t+1}\:|\:S_t=s_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\}
+\end{equation}$$</code>
+For those of you not familiar with the <code>argmax</code> notation: if <code>$f:X\to Y$</code> is a function then
+<code>$$\begin{equation}
+\underset{x\in X}{\mathrm{argmax}}\: f(x)
+\end{equation}$$</code>
+is the set of <strong>maximum points</strong> of <code>$f$</code>. In other words, if
+<code>$$\begin{equation}
+\bar{x}\in \underset{x\in X}{\mathrm{argmax}} f(x)
+\end{equation}$$</code>
+then
+<code>$$\begin{equation}
+f(\bar{x})=\max_{x\in X} f(x)
+\end{equation}$$</code>
+A function can have multiple maximum points, that is why <code>argmax</code> stands for a set. <br></p>
 
 <!---
 # Bellman equation

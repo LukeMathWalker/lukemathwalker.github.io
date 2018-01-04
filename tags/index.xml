@@ -2,12 +2,12 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on Travel journal of an AI adventure</title>
-    <link>http://lukemathwalker.github.io/tags/</link>
+    <link>http://lpalmieri.com/tags/</link>
     <description>Recent content in Tags on Travel journal of an AI adventure</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-uk</language>
     
-	<atom:link href="http://lukemathwalker.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://lpalmieri.com/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
   </channel>

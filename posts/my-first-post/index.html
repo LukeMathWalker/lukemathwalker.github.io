@@ -7,7 +7,7 @@
 		
 		<meta name="author" content="Luca Palmieri">
 		<meta name="description" content="A personal blog focused on AI content and tutorials.">
-		<meta name="generator" content="Hugo 0.32.2" />
+		<meta name="generator" content="Hugo 0.32.4" />
 		<title>Reinforcement Learning: a comprehensive introduction [Part 1] &middot; Travel journal of an AI adventure</title>
 		<link rel="shortcut icon" href="http://lpalmieri.com/images/favicon.ico">
 		<link rel="stylesheet" href="http://lpalmieri.com/css/style.css">
@@ -50,8 +50,8 @@
                     </h1>
                     <h2 class="headline">
                     Dec 28, 2017 21:36
-                    · 2382 words
-                    · 12 minute read
+                    · 2813 words
+                    · 14 minute read
                       <span class="tags">
                       
                       </span>
@@ -74,7 +74,11 @@
 <ul>
 <li><a href="#policy-evaluation-for-fixed-finite-time-horizons">Policy evaluation for fixed &amp; finite time-horizons</a></li>
 </ul></li>
-<li><a href="#optimality-equations-for-fixed-finite-time-horizons">Optimality equations for fixed &amp; finite time-horizons</a></li>
+<li><a href="#optimality-equations-for-fixed-finite-time-horizons">Optimality equations for fixed &amp; finite time-horizons</a>
+<ul>
+<li><a href="#is-randomization-truly-necessary">Is randomization truly necessary?</a></li>
+<li><a href="#history-is-overrated">History is overrated</a></li>
+</ul></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -133,17 +137,20 @@ What is the history of the system? Nothing more than the sequence of past action
 We shall denote the history of our system up to time <code>$t$</code> as
 <code>$$\begin{equation}h_t=(s_1, a_1, s_2, \dots, a_{t-1}, s_t) \quad\quad t\in\{1, 2, \dots\}\end{equation}$$</code>
 or, using a little bit of recursion,
-<code>$$\begin{equation}
-h_t=(h_{t-1}, a_t, s_t) \quad\quad\quad\quad t\in\{1, 2, \dots\}
-\end{equation}$$</code>
+<code>$$\begin{equation}\begin{split}
+h_t &amp;= (h_{t-1}, a_t, s_t) \quad\quad\quad\quad t\in\{2, \dots\} \\
+h_1 &amp;= s_1
+\end{split}\end{equation}$$</code>
 The set of histories can be defined as
-<code>$$\begin{equation}
-\mathcal{H}_t=\prod_1^t (\mathcal{S}\times \mathcal{A}) \quad\quad t\in\{1, 2, \dots\}
-\end{equation}$$</code>
+<code>$$\begin{equation}\begin{split}
+\mathcal{H}_t &amp;= \mathcal{S}\times \prod_2^t (\mathcal{A}\times \mathcal{S}) \quad\quad t\in\{2, \dots\} \\
+\mathcal{H}_1 &amp;= \mathcal{S}
+\end{split}\end{equation}$$</code>
 or, equivalenty,
-<code>$$\begin{equation}
-\mathcal{H}_t=\mathcal{H}_{t-1}\times \mathcal{S}\times \mathcal{A} \quad\quad t\in\{1, 2, \dots\}
-\end{equation}$$</code>
+<code>$$\begin{equation}\begin{split}
+\mathcal{H}_t &amp;=\mathcal{H}_{t-1}\times \mathcal{A}\times \mathcal{S} \quad\quad t\in\{2, \dots\} \\
+\mathcal{H}_1 &amp;= \mathcal{S}
+\end{split}\end{equation}$$</code>
 We can thus formalize the concept of history-dependent decision rule as a function
 <code>$$\begin{equation}
 d_t: \mathcal{H}_t \to \mathcal{P}(A)
@@ -304,11 +311,11 @@ v^t_\pi(h_t) &amp;= \mathbb{E}_{\pi}\left[G_t\:\middle|\:H_t=h_t\right]= \\
 &amp;= \mathbb{E}_{\pi}\left[R_{t+1} +\gamma G_{t+1}\:\middle|\:H_t=h_t\right]= \\
 &amp;= \mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:H_t=h_t\right] +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:H_t=h_t\right]
 \end{align}$$</code>
-Our rewards are markovian - they only depend on the current system state. So:
+Expected rewards conditioned on the current history are purely a function of the environment, which means that
 <code>$$\begin{equation}
-\mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:H_t=h_t\right] = \mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:S_t=s_t\right]
+\mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:H_t=h_t\right]
 \end{equation}$$</code>
-and this quantity can be computed assuming that we know the way the environment reacts to the agent behaviour. <br>
+can be computed assuming that we know the way the environment reacts to the agent behaviour. <br>
 Let&rsquo;s take a closer look at the second term:
 <code>$$\begin{align}
 \mathbb{E}_{\pi}\left[ G_{t+1} \: | \: H_t=h_t \right] &amp;= \sum_g g\mathbb{P}(G_{t+1} = g \: | \: H_t = h_t) = \\
@@ -320,13 +327,13 @@ Let&rsquo;s take a closer look at the second term:
 We can simplify it even further observing that:
 <code>$$\begin{align}
 \mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big) &amp;= \mathbb{P}(S_{t+1} = s, A_{t}=a \:| \: H_t = h_t) \\
-&amp;= \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\mathbb{P}(A_{t}=a \: | \: H_t = h_t)= \\
-&amp;= \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t) b_{d_t(h_t)}(a)
+&amp;= \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\mathbb{P}(A_{t}=a \: | \: H_t = h_t)= \\
+&amp;= \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t) b_{d_t(h_t)}(a)
 \end{align}$$</code>
-<code>$\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)$</code> can be computed if we know a perfect model of the environment, while <code>$b_{d_t(h_t)}(a)$</code> is entirely determined by our policy <code>$\pi=(d_1,d_2,\dots)$</code>. <br>
+<code>$\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)$</code> can be computed if we know a perfect model of the environment, while <code>$b_{d_t(h_t)}(a)$</code> is entirely determined by our policy <code>$\pi=(d_1,d_2,\dots)$</code>. <br>
 Putting everything together we get:
 <code>$$\begin{equation}
-v^t_\pi(h_t) = \mathbb{E}_{\pi}\left[R_{t+1}\:|\:H_t=h_t\right] +\gamma \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_\pi(h_t, s, a) \: b_{d_t(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)
+v^t_\pi(h_t) = \mathbb{E}_{\pi}\left[R_{t+1}\:|\:H_t=h_t\right] +\gamma \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_\pi(h_t, s, a) \: b_{d_t(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)
 \end{equation}$$</code>
 We have thus found out that we can compute <code>$v^t_\pi$</code> once we know <code>$v^{t+1}_\pi$</code>. <br>
 If <code>$T$</code>, the time horizon of our experiments, is potentially infinite then this hierarchy of equations keeps going on and on. If <code>$T$</code>, instead, is a finite and fixed number we can use the previous relation to sketch a first policy evaluation algorithm.</p>
@@ -340,13 +347,13 @@ Then
 <code>$$\begin{align}
 v^{T-1}_\pi(h_{T-1}) &amp;= \mathbb{E}_{\pi}\left[R_{T}\:|\:H_{T-1}=h_{T-1}\right] = \\
 &amp;= \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} r_T(s)\: \mathbb{P}\big(H_{T} = (h_{T-1}, s, a)\:| \: H_{T-1} = h_{T-1}\big) = \\
-&amp;= \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} r_T(s)\: b_{d_t(h_t)}(a) \:\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)
+&amp;= \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} r_T(s)\: b_{d_t(h_t)}(a) \:\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)
 \end{align}$$</code>
 We have thus computed <code>$v^{T-1}_\pi(h_{T-1})$</code>, which can in turn be used to compute <code>$v^{T-1}_\pi(h_{T-2})$</code>! <br>
 Iterating we reach <code>$v^{1}_\pi(s_{1})$</code> - we have found the policy state-value function. <br>
 Using this procedure we can compute the policy state-value function of arbitrary complex randomized history-dependent policies as long as the time-horizon is fixed and finite and we have a perfect knowledge of the agent&rsquo;s environment. <br>
 A pseudo-code formalization of this procedure looks as follows
-<img src="/images/rl-tutorial/finite-horizon-policy-evaluation.png" alt="alt text" /></p>
+<img src="/images/rl-tutorial/finite-horizon-policy-evaluation.jpg" alt="alt text" /></p>
 
 <h3 id="optimality-equations-for-fixed-finite-time-horizons">Optimality equations for fixed &amp; finite time-horizons</h3>
 
@@ -360,7 +367,7 @@ Even though equation <code>$\ref{optimal_naive_sup}$</code> is pretty straight-f
 Luckily enough, it can be proved <em>(Puterman - Th. 4.3.2)</em> that <code>$\{v^t_*\}_{t=1}^T$</code> are a solution of the following <strong>system</strong> of equations:
 <code>$$\begin{align}
 &amp;\forall t\in\{1,\dots, T-1\}: \\
-&amp;v^t_*(h_t) = \max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:S_t=s_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\} \\
+&amp;v^t_*(h_t) = \max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\} \\
 &amp;v^T_*(h_T) = r_T(s_T)
 \end{align}$$</code>
 We have used a <code>max</code> over <code>$\mathcal{A}$</code> because we are assuming that the set of possible actions is finite. <br>
@@ -373,9 +380,9 @@ then we would be a good deal closer to the solution of the optimality problem fo
 Puterman comes in our aid once again, with theorem 4.3.4. <br></p>
 
 <p>Let <code>$\{v^t_*\}_{t=1}^T$</code> be a solution of the optimality equations and suppose that <code>$\pi^*=(d_1^*, \dots, d_{T-1}^*)\in\Pi^{HR}$</code> satisfies
-<code>$$\begin{equation}
+<code>$$\label{trial}\begin{equation}
 \begin{split}
-&amp;\mathbb{E}_{\pi^*}\left[R_{t+1}\:|\:H_t=h_t\right] + \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_{\pi^*}(h_t, s, a) \: b_{d_t^*(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t) = \\ &amp;\quad\quad\max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:S_t=s_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\}
+&amp;\mathbb{E}_{\pi^*}\left[R_{t+1}\:|\:H_t=h_t\right] + \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_{\pi^*}(h_t, s, a) \: b_{d_t^*(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t) = \\ &amp;\quad\quad\max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\}
 \end{split}
 \end{equation}$$</code>
 for <code>$t\in\{1,\dots,T\}$</code>. Then
@@ -384,14 +391,16 @@ v^t_*(h_t) = v^t_{\pi^*}(h_t) \quad \quad \forall h_t \in\mathcal{H}_t, \: \fora
 \end{equation}$$</code>
 which implies that <code>$\pi^*$</code> is an <strong>optimal policy</strong>. <br></p>
 
+<h4 id="is-randomization-truly-necessary">Is randomization truly necessary?</h4>
+
 <p>This result can be further improved using a simple calculus lemma: let <code>$\{w_i\}_{i=1}^K$</code> be a collection of real numbers and let <code>$\{q_i\}_{i=1}^K$</code> be a probability distribution over <code>$\{1,\dots, K\}$</code> (i.e. <code>$q_i\in[0,1]$</code> and <code>$\sum_i q_i=1$</code>); then
 <code>$$\begin{equation}
 \max \{w_i\}_{i=1}^K \geq \sum_{i=1}^K q_i w_i
 \end{equation}$$</code></p>
 
-<p>For each <code>$t\in\{1,\dots, T-1\}$</code> pick <code>$a_t^*\in\mathcal{A}$</code> such that
+<p>For each <code>$t\in\{1,\dots, T-1\}$</code> and <code>$h_t\in\mathcal{H}_t$</code> pick <code>$a_t^*\in\mathcal{A}$</code> such that
 <code>$$\begin{equation}
-a_t^* \in \underset{a\in\mathcal{A}}{\mathrm{argmax}} \bigg\{\mathbb{E}\left[R_{t+1}\:|\:S_t=s_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\}
+a_t^*(h_t) \in \underset{a\in\mathcal{A}}{\mathrm{argmax}} \bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\}
 \end{equation}$$</code>
 <details>
 <summary>For those of you who not familiar with the <code>argmax</code> notation&hellip;</summary>
@@ -411,7 +420,75 @@ A function can have multiple maximum points, that is why <code>argmax</code> sta
 <br>
 </details></p>
 
-<p>asdasda</p>
+<p>Let <code>$\pi^*=(d_1^*, \dots, d_{T-1}^*)\in\Pi^{HR}$</code> be an optimal policy which satisfies equation <code>$\ref{trial}$</code>. Define
+<code>$$
+\begin{equation}
+d_t^{**}(h_t) = a^{*}_t(h_t)
+\end{equation}$$</code>
+for all <code>$t\in\{1,\dots, T-1\}$</code> with <code>$d_t^{**}\in D^{HD}$</code>.</p>
+
+<p>Let <code>$\pi^{**}=(d^{**}_1, \dots, d^{**}_{T-1})\in\Pi^{HD}$</code> be the deterministic history-dependent policy shaped by these decision rules.
+It can be proved, using backward induction, that <code>$\pi^{**}$</code> satisfies equation <code>$\ref{trial}$</code> too. Then
+<code>$$\begin{equation}
+\begin{split}
+&amp;v^t_{\pi^{**}}(h_t) = \mathbb{E}_{\pi^{**}}\left[R_{t+1}\:|\:H_t=h_t\right] + \sum_{s\in\mathcal{S}}v^{t+1}_{\pi^{**}}(h_t, s, a_t^{**}) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a_t^{*}, \, H_t = h_t) = \\
+&amp;\quad\quad =\max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\} \geq \\
+&amp;\quad\quad\geq\sum_{a\in\mathcal{A}} b_{d^{*}(h_t)}(a)\bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\} =\\
+&amp;\quad\quad =\sum_{a\in\mathcal{A}} b_{d^{*}(h_t)}(a)\bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_{\pi^*}(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\} =\\
+&amp;\quad\quad = \mathbb{E}_{\pi^*}\left[R_{t+1}\:|\:H_t=h_t\right] + \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_{\pi^*}(h_t, s, a) \: b_{d_t^*(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)= \\
+&amp;\quad\quad = v_{\pi^*}^t(h_t)
+\end{split}
+\end{equation}$$</code>
+We have thus shown that it is sufficient to search among <em>deterministic</em> history-dependent policies! In other words (or symbols, if you prefer):
+<code>$$\begin{equation}
+v_*^t(h_t):=\sup_{\pi\in\Pi^{HR}}v_{\pi}^t(h_t)=\sup_{\alpha\in\Pi^{HD}}v_{\alpha}^t(h_t)
+\end{equation}$$</code></p>
+
+<p>Furthermore, we have provided a <em>constructive</em> procedure to build a deterministic history-dependent policy under the assumption that the number of actions available to the agent is <em>finite</em>. We can thus get rid of the <code>sup</code>:
+<code>$$\begin{equation}
+v_*^t(h_t):=\max_{\alpha\in\Pi^{HD}}v_{\alpha}^t(h_t)
+\end{equation}$$</code></p>
+
+<h4 id="history-is-overrated">History is overrated</h4>
+
+<p>We can take it one step further levering the following assumptions:</p>
+
+<ul>
+<li><code>$R_{t+1}$</code> depends only on <code>$S_{t}$</code> and <code>$A_t$</code>;</li>
+<li><code>$S_{t+1}$</code> depends only on <code>$S_{t}$</code> and <code>$A_t$</code>;</li>
+</ul>
+
+<p>for all <code>$t\in\{1,\dots,T-1\}$</code>.</p>
+
+<p>Mathematically, this entails the following equalities:
+<code>$$\begin{equation}\begin{split}
+\mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:H_t=h_t\right] &amp;= \mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:S_t=s_t\right] \\
+\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t) &amp;=\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)
+\end{split}\end{equation}$$</code></p>
+
+<p>These simplifications can be now used to show that <code>$v_*^t$</code> depends on <code>$h_t$</code> only through <code>$s_t$</code>, the latest environment state.</p>
+
+<p>We will prove it by backward induction.
+For <code>$t=T$</code> we have:
+<code>$$\begin{equation}
+v_*^T(h_T) = r_T(s_T)
+\end{equation}$$</code>
+which clearly satisfies the thesis. <br>
+Suppose now that our claim holds for all times greater than a certain <code>$t$</code>. By definition:
+<code>$$\begin{equation}\begin{split}
+v^t_*(h_t) &amp;= \max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\} = \\
+&amp;= \max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:S_t=s_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\}
+\end{split}\end{equation}$$</code>
+Using the induction hypothesis we get:
+<code>$$\begin{equation}
+v^t_*(h_t) = \max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:S_t=s_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(s_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\}
+\end{equation}$$</code>
+which easily proves our thesis.</p>
+
+<p>Formally, we have proved that:
+<code>$$\begin{equation}
+v_*^t(h_t):=\max_{\pi\in\Pi^{HD}}v_{\pi}^t(h_t)=\max_{\alpha\in\Pi^{MD}}v_{\alpha}^t(s_t)
+\end{equation}$$</code></p>
 
 <!---
 # Bellman equation

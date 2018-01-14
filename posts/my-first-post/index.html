@@ -50,8 +50,8 @@
                     </h1>
                     <h2 class="headline">
                     Dec 28, 2017 21:36
-                    · 2813 words
-                    · 14 minute read
+                    · 3008 words
+                    · 15 minute read
                       <span class="tags">
                       
                       </span>
@@ -489,6 +489,20 @@ which easily proves our thesis.</p>
 <code>$$\begin{equation}
 v_*^t(h_t):=\max_{\pi\in\Pi^{HD}}v_{\pi}^t(h_t)=\max_{\alpha\in\Pi^{MD}}v_{\alpha}^t(s_t)
 \end{equation}$$</code></p>
+
+<p>A small remark: we have assumed that rewards and transitions were markovian and we have showed that the best deterministic markovian policy can aim at the same return of the best history-dependent randomized policy. Using the exact same steps we can show that if rewards and transitions depend on the last <code>$k\in\mathbb{N}$</code> steps than a deterministic policy using only the <code>$k$</code> most recent states can achieve the greatest return - the easy adaptation of our previous argument is left to the keen reader.</p>
+
+<p>Before questioning if we can push it even further, using stationary policies, it is worth to spell out the <em>backward induction algorithm</em>, which computes the optimal value function for a problem with fixed and finite time-horizon.
+The algorithm determines
+<code>$$\begin{equation}
+A^*_t(s_t):= \underset{a\in\mathcal{A}}{\mathrm{argmax}} \bigg\{\mathbb{E}\left[R_{t+1}\:|\:S_t=s_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(s_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\}
+\end{equation}$$</code>
+for all <code>$t\in\{1,\dots, T-1\}$</code> and <code>$s_t\in\mathcal{S}$</code> - we get deterministic markovian policies for free!</p>
+
+<p>Here is the pseudo-code:
+<img src="/images/rl-tutorial/backward-induction-algorithm.png" alt="alt text" /></p>
+
+<p>A quick count tells us that we are going to evaluate line 10 right-side expression <code>$(T-1)|\mathcal{S}||\mathcal{A}|$</code> times, which is way better than evaluating and comparing each one of the possible <code>$|\mathcal{S}|^{|\mathcal{A}|(T-1)}$</code> different deterministic markovian policies!</p>
 
 <!---
 # Bellman equation

@@ -1,0 +1,25 @@
+\documentclass{standalone}
+\usepackage{varwidth}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{algorithm} %ctan.org\pkg\algorithms
+\usepackage{algpseudocode}
+\begin{document}
+	\begin{varwidth}{1.5\linewidth}
+		\par\noindent
+		\begin{algorithmic}[1]
+			\Procedure{Finite Horizon Policy Evaluation}{$\pi\in\Pi^{HD}$}
+			\State $t\gets T-1$
+			\For{$h_{T-1}\in\mathcal{H}_{T-1}$}\vskip 1 mm
+				\State $\displaystyle v^{T-1}_\pi(h_{T-1}) = \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} r_T(s)\: b_{d_t(h_t)}(a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)$
+			\EndFor
+			\While{$t\geq1$}\vskip 1 mm
+			\For{$h_{t}\in\mathcal{H}_{t}$}\vskip 1 mm
+			\State $\displaystyle v^t_\pi(h_t) = \mathbb{E}_{\pi}\left[R_{t+1}\:|\:H_t=h_t\right] +\gamma \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_\pi(h_t, s, a) \: b_{d_t(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)$
+			\EndFor
+			\State $t\gets t - 1$
+			\EndWhile
+			\EndProcedure
+		\end{algorithmic}
+	\end{varwidth}
+\end{document}

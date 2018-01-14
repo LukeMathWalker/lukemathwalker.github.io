@@ -1,0 +1,27 @@
+\documentclass{standalone}
+\usepackage{varwidth}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{algorithm} %ctan.org\pkg\algorithms
+\usepackage{algpseudocode}
+\begin{document}
+	\begin{varwidth}{1.5\linewidth}
+		\par\noindent
+		\begin{algorithmic}[1]
+			\Procedure{Backward Induction Algorithm}{}
+			\State $t\gets T$
+			\For{$s_{T}\in\mathcal{S}_{T}$}\vskip 1 mm
+				\State $\displaystyle v^{T}_*(s_{T}) \gets r_T(s_T)$
+			\EndFor
+			\While{$t\geq1$}\vskip 1 mm
+			\For{$s_{t}\in\mathcal{H}_{t}$}\vskip 1 mm
+			\State Compute and memorize $A^*_t(s_t)$
+			\State $a^* \gets$ first element in $A^*_t(s_t)$
+			\State $\displaystyle v^t_*(s_t) \gets \mathbb{E}\left[R_{t+1}\:|\:S_t=s_t,\: A_t=a^* \right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(s_t, s, a^*) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a^*, \, S_t = s_t)$
+			\EndFor
+			\State $t\gets t - 1$
+			\EndWhile
+			\EndProcedure
+		\end{algorithmic}
+	\end{varwidth}
+\end{document}

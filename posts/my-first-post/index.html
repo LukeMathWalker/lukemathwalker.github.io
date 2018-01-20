@@ -7,7 +7,7 @@
 		
 		<meta name="author" content="Luca Palmieri">
 		<meta name="description" content="A personal blog focused on AI content and tutorials.">
-		<meta name="generator" content="Hugo 0.32.4" />
+		<meta name="generator" content="Hugo 0.33" />
 		<title>Reinforcement Learning: a comprehensive introduction [Part 1] &middot; Travel journal of an AI adventure</title>
 		<link rel="shortcut icon" href="http://lpalmieri.com/images/favicon.ico">
 		<link rel="stylesheet" href="http://lpalmieri.com/css/style.css">
@@ -50,8 +50,8 @@
                     </h1>
                     <h2 class="headline">
                     Dec 28, 2017 21:36
-                    · 3008 words
-                    · 15 minute read
+                    · 3376 words
+                    · 16 minute read
                       <span class="tags">
                       
                       </span>
@@ -78,6 +78,7 @@
 <ul>
 <li><a href="#is-randomization-truly-necessary">Is randomization truly necessary?</a></li>
 <li><a href="#history-is-overrated">History is overrated</a></li>
+<li><a href="#time-dependency-is-a-nasty-beast">Time-dependency is a nasty beast</a></li>
 </ul></li>
 </ul></li>
 </ul></li>
@@ -138,7 +139,7 @@ We shall denote the history of our system up to time <code>$t$</code> as
 <code>$$\begin{equation}h_t=(s_1, a_1, s_2, \dots, a_{t-1}, s_t) \quad\quad t\in\{1, 2, \dots\}\end{equation}$$</code>
 or, using a little bit of recursion,
 <code>$$\begin{equation}\begin{split}
-h_t &amp;= (h_{t-1}, a_t, s_t) \quad\quad\quad\quad t\in\{2, \dots\} \\
+h_t &amp;= (h_{t-1}, a_{t-1}, s_t) \quad\quad\quad\quad t\in\{2, \dots\} \\
 h_1 &amp;= s_1
 \end{split}\end{equation}$$</code>
 The set of histories can be defined as
@@ -380,10 +381,9 @@ then we would be a good deal closer to the solution of the optimality problem fo
 Puterman comes in our aid once again, with theorem 4.3.4. <br></p>
 
 <p>Let <code>$\{v^t_*\}_{t=1}^T$</code> be a solution of the optimality equations and suppose that <code>$\pi^*=(d_1^*, \dots, d_{T-1}^*)\in\Pi^{HR}$</code> satisfies
-<code>$$\label{trial}\begin{equation}
-\begin{split}
+<code>$$\begin{equation}\begin{split}
 &amp;\mathbb{E}_{\pi^*}\left[R_{t+1}\:|\:H_t=h_t\right] + \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_{\pi^*}(h_t, s, a) \: b_{d_t^*(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t) = \\ &amp;\quad\quad\max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\}
-\end{split}
+\end{split}\label{trial}
 \end{equation}$$</code>
 for <code>$t\in\{1,\dots,T\}$</code>. Then
 <code>$$\begin{equation}
@@ -499,10 +499,48 @@ A^*_t(s_t):= \underset{a\in\mathcal{A}}{\mathrm{argmax}} \bigg\{\mathbb{E}\left[
 \end{equation}$$</code>
 for all <code>$t\in\{1,\dots, T-1\}$</code> and <code>$s_t\in\mathcal{S}$</code> - we get deterministic markovian policies for free!</p>
 
-<p>Here is the pseudo-code:
-<img src="/images/rl-tutorial/backward-induction-algorithm.png" alt="alt text" /></p>
+<p>Here is the pseudo-code:</p>
+
+
+<figure >
+    
+        <img src="/image/rl-tutorial/backward-induction-algorithm.png" />
+    
+    
+    <figcaption>
+        <h4>Backward Induction Algorithm</h4>
+        
+    </figcaption>
+    
+</figure>
+
 
 <p>A quick count tells us that we are going to evaluate line 10 right-side expression <code>$(T-1)|\mathcal{S}||\mathcal{A}|$</code> times, which is way better than evaluating and comparing each one of the possible <code>$|\mathcal{S}|^{|\mathcal{A}|(T-1)}$</code> different deterministic markovian policies!</p>
+
+<h4 id="time-dependency-is-a-nasty-beast">Time-dependency is a nasty beast</h4>
+
+<p>Considering the direction we have been pursuing so far, it seems only natural to expect that we can improve our results even further, establishing that is sufficient to consider stationary deterministic markov policies, without even bothering to choose a different decision rule for each step of our agent simulation.
+Unfortunately <em>this is not the case</em> for simulations with a <em>fixed</em> and finite time-horizon. <br>
+Our final reward, <code>$r_T$</code>, does in fact violate a key hypothesis which is needed to restrict our attention to stationary policies: rewards have to be <em>time-independent</em>.</p>
+
+<p>You can easily see that this is not the case in our current scenario.
+Consider, for example, a Candy Crush game - you have a predetermined number of moves to achieve a certain objective swapping adiacent candies to trigger events.
+If you manage to line up 5 candies of the same color with a single move you get a powerful bonus - you can swap this crystal ball with a candy of any color and see all similar candies explode instantaneously (without mentioning further available combos with other special candies!).</p>
+
+
+<figure >
+    
+        <img src="/image/rl-tutorial/candy_crush_5.jpg" width="50%" />
+    
+    
+</figure>
+
+
+<p>It goes without saying that if you have the possibility to line up 5 candies of the same color at the start of the game it is always convenient to do so. Would it be equally convenient if you had just <em>one</em> move left and there is the possibility to fulfill the game quest doing a normal 3-combo?
+No, it wouldn&rsquo;t - and this clearly illustrates how a fixed and arbitrary time-horizon prevents us from finding an optimal policy in the stationary class in a general setting.</p>
+
+<p>Not everything is lost: it is still possible to formulate problems with a finite time-horizon without using time-dependent rewards - the termination of the simulation needs to be triggered by <em>a set of terminal states</em> instead of being associated with a specific time instant. <br>
+A chess game, for example, has a finite time-horizon even though the length of the game itself is a random variable - we just need to properly define those states (or sequence of states) associated with the end of a game and we can still claim that our rewards are time-indipendent.</p>
 
 <!---
 # Bellman equation

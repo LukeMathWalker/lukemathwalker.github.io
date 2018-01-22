@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en-uk">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		
+		<meta name="author" content="Luca Palmieri">
+		<meta name="description" content="A personal blog focused on AI content and tutorials.">
+		<meta name="generator" content="Hugo 0.33" />
+		<title>Reinforcement Learning: a comprehensive introduction [Part 1] &middot; Travel journal of an AI adventure</title>
+		<link rel="shortcut icon" href="http://lpalmieri.com/images/favicon.ico">
+		<link rel="stylesheet" href="http://lpalmieri.com/css/style.css">
+		<link rel="stylesheet" href="http://lpalmieri.com/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="http://lpalmieri.com/css/font-awesome.min.css">
+		
+
+		
+		<link href="http://lpalmieri.com/index.xml" rel="alternate" type="application/rss+xml" title="Travel journal of an AI adventure" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='http://lpalmieri.com/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='http://lpalmieri.com/posts'>Archive</a>
+  
+	<a href='http://lpalmieri.com/about'>About</a>
+
+	
+
+	
+	<a class="cta" href="http://lpalmieri.com/index.xml">Subscribe</a>
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        Reinforcement Learning: a comprehensive introduction [Part 1]
+                    </h1>
+                    <h2 class="headline">
+                    Dec 28, 2017 21:36
+                    · 3530 words
+                    · 17 minute read
+                      <span class="tags">
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                  
+                    <div id="toc">
+                      <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#policies">Policies</a>
+<ul>
+<li><a href="#decision-rules">Decision rules</a></li>
+<li><a href="#policies-1">Policies</a></li>
+<li><a href="#returns">Returns</a></li>
+<li><a href="#value-functions-and-optimality">Value functions and optimality</a></li>
+<li><a href="#policy-evaluation">Policy evaluation</a>
+<ul>
+<li><a href="#policy-evaluation-for-fixed-finite-time-horizons">Policy evaluation for fixed &amp; finite time-horizons</a></li>
+</ul></li>
+<li><a href="#optimality-equations-for-fixed-finite-time-horizons">Optimality equations for fixed &amp; finite time-horizons</a>
+<ul>
+<li><a href="#is-randomization-truly-necessary">Is randomization truly necessary?</a></li>
+<li><a href="#history-is-overrated">History is overrated</a></li>
+<li><a href="#time-dependency-is-a-nasty-beast">Time-dependency is a nasty beast</a></li>
+</ul></li>
+<li><a href="#bellman-equation">Bellman equation</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+                    </div>
+                  
+                
+                <section id="post-body">
+                    
+
+<!---
+# Notation and basic definitions
+
+| Object | Notation   |
+|:------:|:------:|
+|   State space  | $\mathcal{S}$|
+|   State at time $t$  | $S_t$|
+|   Available actions in state $s$  | $\mathcal{A}(s)$|
+|   Action taken at time $t$  | $A_t$|
+|   Reward space  | $\mathcal{R}$|
+|   Reward after action $A_t$  | $R_{t+1}$|
+
+- Let `$ a\in\mathcal{A}(s) $`, `$ r\in\mathcal{R} $` and `$s, s'\in\mathcal{S}$`. Then:
+`$$\begin{equation} p(s', r\:|\: s,a):=\mathbb{P}\left(S_t=s', R_{t+1}=r\:|\:S_{t-1}=s, A_{t-1}=a\right) \end{equation}$$`
+We have that (*probability measure*)
+`$$\begin{equation}
+\sum_{s'\in\mathcal{S},\:r\in\mathcal{R}}p(s', r\:|\: s,a) = 1
+\end{equation}$$`
+<br>
+- Let `$r(s,a)$` define the expected reward for a state-action pair, namely
+`$$\begin{equation}
+r(s,a) := \mathbb{E}\left[R_t\:\middle|\:S_{t-1}=s,\: A_{t-1}=a\right]
+\end{equation}$$`
+Then
+`$$\begin{equation}
+r(s,a) = \sum_{r\in\mathcal{R}} rp(r\:|\:s, a) = \sum_{r\in\mathcal{R}} r \sum_{s'\in\mathcal{S}} p(r, s'\:|\:s, a)
+\end{equation}$$`
+<br>
+- Let `$r(s,a,s')$` define the expected reward for a state/action/next-state triple, namely
+`$$\begin{equation}
+r(s,a,s') := \mathbb{E}\left[R_t\:\middle|\:S_{t-1}=s,\: A_{t-1}=a,\:S_{t}=s'\right]
+\end{equation}$$`
+Then
+`$$\begin{equation}
+r(s,a,s') = \sum_{r\in\mathcal{R}} rp(r\:|\:s, a, s') = \sum_{r\in\mathcal{R}} r \sum_{s'\in\mathcal{S}} \frac{p(r, s'\:|\:s, a)}{p(s'\:|\:s,a)}
+\end{equation}$$`
+<br>
+-->
+
+<h2 id="policies">Policies</h2>
+
+<h3 id="decision-rules">Decision rules</h3>
+
+<p>A <strong>randomized history-dependent decision rule</strong> <code>$d_t$</code> is a mapping between the history of our system up to the current state <code>$t$</code> and the probability of selecting each possible action. <br>
+What is the history of the system? Nothing more than the sequence of past actions and states, assuming that past rewards do not influence our future behaviour. <br>
+We shall denote the history of our system up to time <code>$t$</code> as
+<code>$$\begin{equation}h_t=(s_1, a_1, s_2, \dots, a_{t-1}, s_t) \quad\quad t\in\{1, 2, \dots\}\end{equation}$$</code>
+or, using a little bit of recursion,
+<code>$$\begin{equation}\begin{split}
+h_t &amp;= (h_{t-1}, a_{t-1}, s_t) \quad\quad\quad\quad t\in\{2, \dots\} \\
+h_1 &amp;= s_1
+\end{split}\end{equation}$$</code>
+The set of histories can be defined as
+<code>$$\begin{equation}\begin{split}
+\mathcal{H}_t &amp;= \mathcal{S}\times \prod_2^t (\mathcal{A}\times \mathcal{S}) \quad\quad t\in\{2, \dots\} \\
+\mathcal{H}_1 &amp;= \mathcal{S}
+\end{split}\end{equation}$$</code>
+or, equivalenty,
+<code>$$\begin{equation}\begin{split}
+\mathcal{H}_t &amp;=\mathcal{H}_{t-1}\times \mathcal{A}\times \mathcal{S} \quad\quad t\in\{2, \dots\} \\
+\mathcal{H}_1 &amp;= \mathcal{S}
+\end{split}\end{equation}$$</code>
+We can thus formalize the concept of history-dependent decision rule as a function
+<code>$$\begin{equation}
+d_t: \mathcal{H}_t \to \mathcal{P}(A)
+\end{equation}$$</code>
+where <code>$\mathcal{P}(A)$</code> denotes the collection of probability distributions over the set of actions <code>$\mathcal{A}$</code>. <br>
+We shall denote by <code>$b_{d_t}(a\,|\,h_t)$</code> or <code>$b_{d_t(h_t)}(a)$</code> the probability of taking action <code>$a$</code> if our system history up to time <code>$t$</code> is equal to <code>$h_t$</code>. <br></p>
+
+<p>We can also consider a <strong>deterministic history-dependent decision rule</strong> <code>$d_t$</code>, which can be seen as a function:
+<code>$$\begin{equation}
+d_t: \mathcal{H}_t \to \mathcal{A}
+\end{equation}$$</code>
+or, equivalently, as a randomized history-dependent decision rule such that for each <code>$h_t$</code> there exists a unique <code>$a\in \mathcal{A}$</code> with <code>$b_{d_t(h_t)}(a)=1$</code> and <code>$b_{d_t(h_t)}(a')=0$</code> for all <code>$a'\neq a$</code>.<br></p>
+
+<p>If we denote the set of randomized history-dependent decision rules at time <code>$t$</code> as <code>$D_t^{HR}$</code> and the set of deterministic history-dependent decision rule as <code>$D_t^{HD}$</code> we clearly have, according to our last observation,
+<code>$$\begin{equation}
+D_t^{HD} \subset D_t^{HR}
+\end{equation}$$</code></p>
+
+<p>Considering the whole history of the system up to the current state is certainly the most general viewpoint we can choose before committing to a certain action. Nonetheless it is computationally very expensive to keep track of a function whose input dimension grows exponentially in time: consider, for example, a state space <code>$\mathcal{S}$</code> with five elements equipped with an action set <code>$\mathcal{A}$</code> composed of three choices. <br>
+For <code>$t=1$</code> we have 5 elements in <code>$\mathcal{H}_1$</code> (we take <code>$t=1$</code> as starting state). <br>
+For <code>$t=2$</code> we have 5x3x5=75 elements in <code>$\mathcal{H}_2$</code>. <br>
+For an arbitrary <code>$t\in\mathbb{N}$</code> we have
+<code>$$\begin{equation}
+|\mathcal{H}_t| = 5^t 3^{t-1}
+\end{equation}$$</code>
+which, you surely agree with me, is going to become problematic soon enough, even if the system is ridiculously small. <br></p>
+
+<p>A much more convenient class of decision rules is the collection of <strong>randomized markovian decision rules</strong>, which we denote by <code>$D^{MR}$</code>: the action choice is chosen randomly from a probability distribution depending only on the <em>current</em> state of the system (no <code>$t$</code> subscript this time!).<br>
+This can be stated formally saying that every <code>$d\in D^{MR}$</code> if a function from <code>$\mathcal{S}$</code> to <code>$\mathcal{P}(\mathcal{A})$</code>. <br></p>
+
+<p>Just as we did for history-dependent decision rules we can identify the subset of <strong>deterministic markovian decision rules</strong>, which are simply functions from <code>$\mathcal{S}$</code> to <code>$\mathcal{A}$</code>. We denote them by <code>$D^{MD}$</code>.<br></p>
+
+<p>We can thus provide chains of inclusions between these families of decision rules, in increasing order of generality:
+<code>$$\begin{align}
+D^{MD} &amp;\subset D_t^{HD} \subset D_t^{HR} \\
+D^{MD} &amp;\subset D^{MR} \subset D_t^{HR} \\
+\end{align}$$</code></p>
+
+<p>The computational gain is evident: a deterministic markovian decision rule <code>$d$</code> only requires <code>$2|\mathcal{S}|$</code> memory slots - we just need to keep track of the action index associated to each possible state of the system. <br>
+Randomized markovian decision rules are slightly more expensive - they require <code>$|\mathcal{S}||\mathcal{A}|$</code> memory slots, but they are still a feasible choice. <br></p>
+
+<h3 id="policies-1">Policies</h3>
+
+<p>Decision rules are only a piece of the puzzle - how to choose the next action to take considering the current system history. <br>
+If we want to specify the system behaviour from the initial state onwards we need to provide a <strong>sequence</strong> of decision rules - a so-called <strong>policy</strong>. <br></p>
+
+<p>We can formally describe a policy as an (infinite) ordered sequence of decision rules indexed by the time <code>$t$</code>:
+<code>$$\begin{equation}
+\pi = (d_1, d_2, \dots)
+\end{equation}$$</code>
+or, using a more compact notation,
+<code>$$\begin{equation}
+\pi \in \prod_{t=1}^{+\infty} D_t^K
+\end{equation}$$</code>
+where <code>$K=\{MD, MR, HD, HR\}$</code>. <br>
+We shall always assume that policies are composed of decision rules of the same type. We thus have:</p>
+
+<ul>
+<li><strong>randomized history-dependent policies</strong>, <code>$\Pi^{HR}$</code>;</li>
+<li><strong>deterministic history-dependent policies</strong>, <code>$\Pi^{HD}$</code>;</li>
+<li><strong>randomized markovian policies</strong>, <code>$\Pi^{MR}$</code>;</li>
+<li><strong>deterministic markovian policies</strong>, <code>$\Pi^{MD}$</code>.</li>
+</ul>
+
+<p>If storing a <em>history-dependent decision rule</em> was troublesome, just meditate for a second on the problem of storing a <em>history-dependent policy</em>! <br>
+Unfortunately even a deterministic markovian policy is fearsome to store if we are considering a potentially infinite number of time steps. <br></p>
+
+<p>This is why we introduce a new family of policies: a policy <code>$\pi$</code> is said to be a <strong>randomized stationary policy</strong> if <code>$d_t=d$</code> for all <code>$t\in\mathbb{N}$</code> with <code>$d\in D^{MR}$</code>, i.e.
+<code>$$\begin{equation}
+\pi = (d, d, \dots)
+\end{equation}$$</code>
+We use <code>$d^\infty$</code> as a shortcut for <code>$(d, d, \dots)$</code>. <br>
+The set of randomized stationary policies is denoted by <code>$\Pi^{SR}$</code>, while we use <code>$\Pi^{SD}$</code> for the subset of <strong>deterministic stationary policies</strong>. <br></p>
+
+<p>With stationary polies the memory footprint goes back to the one computed for markovian decision rules, which is more than desirable. Nonetheless we must ask ourselves a couple of important questions:</p>
+
+<ul>
+<li>Can we achieve the same rewards using stationary policies?</li>
+<li>What hypotheses do we need to be sure that an <strong>optimal</strong> policy for our system can be found in the family of stationary policies?</li>
+</ul>
+
+<p>Before engaging in this interesting discussion we should define what we mean by <strong>optimal</strong> when we are speaking of policies.</p>
+
+<h3 id="returns">Returns</h3>
+
+<p>How do we measure the performances of a policy? <br>
+In a Reinforcement Learning context, every action is followed by a reward (positive or negative). To measure the overall performance of a policy we need to combine all these rewards together - this is usually called <strong>return</strong> in the literature. <br>
+We can craft arbitrarily complex return criteria, but in this blog post we are going to stick to the most common one: discounted cumulative return. <br>
+If <code>$R_{t+1}$</code> denotes the reward obtained after action <code>$A_t$</code> we can define the <strong>discounted cumulative return</strong> at time <code>$t$</code>, <code>$G_t$</code>, as
+<code>$$\begin{equation}
+G_t := \sum_{k=t+1}^{T}\gamma^{k-t-1}R_k
+\end{equation}$$</code>
+where <code>$\gamma\in[0, 1]$</code> is called <strong>discount rate</strong> and <code>$T\in\mathbb{R}\cup\{+\infty\}$</code>. <br>
+If we are dealing with a finite time horizon <code>$T$</code> then we can simply set <code>$\gamma=1$</code> and consider the <strong>cumulative return</strong>, i.e.
+<code>$$\begin{equation}
+G_t := \sum_{k=t+1}^{T}R_k
+\end{equation}$$</code>
+But this setting becomes problematic if the time horizon is (potentially) infinite. <br> Introducing a discount rate <code>$\gamma\in[0,1)$</code> allows us to associate a bigger weight to closer rewards as well as ensuring that the overall return <code>$G_t$</code> remains finite if our rewards are bounded:
+<code>$$\begin{equation}
+|G_t| \leq \sum_{k=t+1}^{+\infty}\left|\gamma^{k-t-1}R_k\right| = \sum_{k=t+1}^{+\infty}\gamma^{k-t-1}\left|R_k\right| \leq M \sum_{k=t+1}^{+\infty}\gamma^{k-t-1} = \frac{M}{1-\gamma} &lt; +\infty
+\end{equation}$$</code>
+assuming that there exists <code>$M&gt;0$</code> such that <code>$|R_t|\leq M$</code> for all <code>$t$</code>. <br>
+We implicitly assume that if <code>$\gamma=1$</code> then <code>$T\neq +\infty$</code>, and vice versa. <br>
+<!---
+We can derive, just from the definition, an easy property of the return `$G_t$`:
+`$$\begin{equation}
+G_t = \sum_{k=t+1}^{T}\gamma^{k-t-1}R_k = R_{t+1} + \gamma\sum_{k=t+2}^{T}\gamma^{k-t-2}R_k = R_{t+1} + \gamma G_{t+1}
+\end{equation}$$`
+--></p>
+
+<h3 id="value-functions-and-optimality">Value functions and optimality</h3>
+
+<p>We can finally define what a policy is <em>worth</em> by looking at the expected return when following that sequence of decision rules! <br>
+We encode this concept into the so-called <strong>value function</strong>. <br></p>
+
+<p>The value of a history <code>$h_t$</code> under a policy <code>$\pi$</code> is the expected return when starting in <code>$h_t$</code> and following <code>$\pi$</code> thereafter. We shall denote it by <code>$v_\pi(h_t)$</code>. Formally:
+<code>$$\begin{equation}
+v^t_\pi(h_t):= \mathbb{E}_{\pi}\left[G_t\:\middle|\:H_t=h_t\right]
+\end{equation}$$</code>
+<code>$v^t_\pi$</code> is called the <strong>history-value function for policy <code>$\pi$</code> at time <code>$t$</code></strong>. <br>
+<code>$v^1_\pi$</code>, instead, is called the <strong>state-value function for policy <code>$\pi$</code></strong> - it will be extremely important for stationary policies. <br></p>
+
+<p>Using the concept of state-value function we can affirm that a policy <code>$\pi$</code> is better than a policy <code>$\pi'$</code> if
+<code>$$\begin{equation}
+v^1_\pi(s) \geq v^1_{\pi'}(s) \quad \forall s\in\mathcal{S}
+\end{equation}$$</code>
+where <code>$s$</code> is the initial state of our system. <br></p>
+
+<p>A policy <code>$\pi$</code> is said to be <strong>optimal</strong> if
+<code>$$\begin{equation}
+v^1_\pi(s) &gt; v^1_{\pi'}(s) \quad \forall s\in\mathcal{S}
+\end{equation}$$</code>
+for all <code>$\pi'\in\Pi^{HR}$</code> [remember that randomized history-dependent policies are the most general class!].</p>
+
+<p>It is important to remark that <code>$v_{(\cdot)}$</code> is an <em>expected value</em> - even if a policy <code>$\pi$</code> is better <em>on average</em> than a policy <code>$\pi'$</code> it might still happen than an experiment using policy <code>$\pi$</code> produces a higher return compared to an experiment using policy <code>$\pi'$</code>: stochasticity baby! <br></p>
+
+<p>Before embarking on the quest for optimality it is probably better to show a procedure to actually compute the state-value and history-value functions of a policy.</p>
+
+<!---
+The value of taking action $a$ in state $s$ under a policy `$\pi$` is the expected return when starting in `$s$`, taking action $a$ and therefore following `$\pi$`. We shall denote it by `$q_\pi(s, a)$`. Formally:
+`$$\begin{equation}
+q_\pi(s, a):= \mathbb{E}_{\pi}\left[G_t\:\middle|\:S_t=s,\,A_t=a\right]
+\end{equation}$$`
+`$q_\pi(s, a)$` is also called the **action-value function for policy `$\pi$`**.
+<br>
+-->
+
+<h3 id="policy-evaluation">Policy evaluation</h3>
+
+<p>Let&rsquo;s start with a property of the discounted cumulative return. <br>
+We can derive, just by using its definition, the following equation:
+<code>$$\begin{equation}
+G_t = \sum_{k=t+1}^{T}\gamma^{k-t-1}R_k = R_{t+1} + \gamma\sum_{k=t+2}^{T}\gamma^{k-t-2}R_k = R_{t+1} + \gamma G_{t+1}
+\end{equation}$$</code>
+We can leverage it to get a similar relationship for history-value functions. <br> We have
+<code>$$\begin{align}
+v^t_\pi(h_t) &amp;= \mathbb{E}_{\pi}\left[G_t\:\middle|\:H_t=h_t\right]= \\
+&amp;= \mathbb{E}_{\pi}\left[R_{t+1} +\gamma G_{t+1}\:\middle|\:H_t=h_t\right]= \\
+&amp;= \mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:H_t=h_t\right] +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:H_t=h_t\right]
+\end{align}$$</code>
+Expected rewards conditioned on the current history are purely a function of the environment, which means that
+<code>$$\begin{equation}
+\mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:H_t=h_t\right]
+\end{equation}$$</code>
+can be computed assuming that we know the way the environment reacts to the agent behaviour. <br>
+Let&rsquo;s take a closer look at the second term:
+<code>$$\begin{align}
+\mathbb{E}_{\pi}\left[ G_{t+1} \: | \: H_t=h_t \right] &amp;= \sum_g g\mathbb{P}(G_{t+1} = g \: | \: H_t = h_t) = \\
+&amp;= \sum_g g \bigg[ \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}}\mathbb{P}\big(G_{t+1}=g\:| \: H_{t+1} = (h_t, s, a)\big)\mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big) \bigg] = \\
+&amp;= \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} \bigg[ \sum_g g \mathbb{P}\big(G_{t+1}=g\:| \: H_{t+1} = (h_t, s, a)\big)\bigg] \mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big)  = \\
+&amp;= \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} \mathbb{E}_{\pi}\left[ G_{t+1} \: | \: H_{t+1}=(h_t, s, a) \right] \mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big) = \\
+&amp; = \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_\pi(h_t, s, a) \mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big)
+\end{align}$$</code>
+We can simplify it even further observing that:
+<code>$$\begin{align}
+\mathbb{P}\big(H_{t+1} = (h_t, s, a)\:| \: H_t = h_t\big) &amp;= \mathbb{P}(S_{t+1} = s, A_{t}=a \:| \: H_t = h_t) \\
+&amp;= \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\mathbb{P}(A_{t}=a \: | \: H_t = h_t)= \\
+&amp;= \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t) b_{d_t(h_t)}(a)
+\end{align}$$</code>
+<code>$\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)$</code> can be computed if we know a perfect model of the environment, while <code>$b_{d_t(h_t)}(a)$</code> is entirely determined by our policy <code>$\pi=(d_1,d_2,\dots)$</code>. <br>
+Putting everything together we get:
+<code>$$\begin{equation}
+v^t_\pi(h_t) = \mathbb{E}_{\pi}\left[R_{t+1}\:|\:H_t=h_t\right] +\gamma \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_\pi(h_t, s, a) \: b_{d_t(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)
+\end{equation}$$</code>
+We have thus found out that we can compute <code>$v^t_\pi$</code> once we know <code>$v^{t+1}_\pi$</code>. <br>
+If <code>$T$</code>, the time horizon of our experiments, is potentially infinite then this hierarchy of equations keeps going on and on. If <code>$T$</code>, instead, is a finite and fixed number we can use the previous relation to sketch a first policy evaluation algorithm.</p>
+
+<h4 id="policy-evaluation-for-fixed-finite-time-horizons">Policy evaluation for fixed &amp; finite time-horizons</h4>
+
+<p>Suppose, as we just suggested, that <code>$T$</code> is a fixed and finite natural number. <br />
+This means that <code>$S_T$</code> is the <em>terminal</em> state of our agent: no actions to be taken once we reach that point. <br />
+We assume that there exists a terminal reward function, <code>$r_T:\mathcal{S}\to\mathbb{R}$</code>: if <code>$S_T=s$</code> is the terminal state of the agent then he is granted a reward <code>$r_T(s)$</code>. <br>
+Then
+<code>$$\begin{align}
+v^{T-1}_\pi(h_{T-1}) &amp;= \mathbb{E}_{\pi}\left[R_{T}\:|\:H_{T-1}=h_{T-1}\right] = \\
+&amp;= \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} r_T(s)\: \mathbb{P}\big(H_{T} = (h_{T-1}, s, a)\:| \: H_{T-1} = h_{T-1}\big) = \\
+&amp;= \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} r_T(s)\: b_{d_t(h_t)}(a) \:\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)
+\end{align}$$</code>
+We have thus computed <code>$v^{T-1}_\pi(h_{T-1})$</code>, which can in turn be used to compute <code>$v^{T-1}_\pi(h_{T-2})$</code>! <br>
+Iterating we reach <code>$v^{1}_\pi(s_{1})$</code> - we have found the policy state-value function. <br>
+Using this procedure we can compute the policy state-value function of arbitrary complex randomized history-dependent policies as long as the time-horizon is fixed and finite and we have a perfect knowledge of the agent&rsquo;s environment. <br>
+A pseudo-code formalization of this procedure looks as follows
+<img src="/image/rl-tutorial-01/finite-horizon-policy-evaluation.jpg" alt="alt text" /></p>
+
+<h3 id="optimality-equations-for-fixed-finite-time-horizons">Optimality equations for fixed &amp; finite time-horizons</h3>
+
+<p>We stated that a policy <code>$\pi$</code> is <em>optimal</em> if <code>$v_{\pi}^1(s)\geq v_{\alpha}^1(s)$</code> for all <code>$\alpha\in\Pi^{HR}$</code> and for all <code>$s\in\mathcal{S}$</code>. <br>
+A function (not a policy, be careful!) satisfying this property can be easily defined:
+<code>$$\begin{equation}\label{optimal_naive_sup}
+v^t_* (h_t) := \sup_{\pi\in\Pi^{HR}} v^t_\pi (h_t) \quad \forall h_t \in\mathcal{H}_t
+\end{equation}$$</code>
+The set of randomized history-dependent policies is infinite (and uncountable): we cannot state the previous definition using a <code>max</code>. <br>
+Even though equation <code>$\ref{optimal_naive_sup}$</code> is pretty straight-forward it does not provide, by itself, a way to actually <strong>compute</strong> <code>$v^t_*$</code>. <br>
+Luckily enough, it can be proved <em>(Puterman - Th. 4.3.2)</em> that <code>$\{v^t_*\}_{t=1}^T$</code> are a solution of the following <strong>system</strong> of equations:
+<code>$$\begin{align}
+&amp;\forall t\in\{1,\dots, T-1\}: \\
+&amp;v^t_*(h_t) = \max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\} \\
+&amp;v^T_*(h_T) = r_T(s_T)
+\end{align}$$</code>
+We have used a <code>max</code> over <code>$\mathcal{A}$</code> because we are assuming that the set of possible actions is finite. <br>
+These equations are usually referred as <strong>optimality equations</strong>. <br>
+We shall see that they can be used to actually compute <code>$v^t_*$</code>, which for the moment stands as an upper-bound on the history-value function of our hypothetical optimal policies. If we could prove that there exists a policy <code>$\pi^*$</code> such that
+<code>$$\begin{equation}
+v^t_*(h_t) = v^t_{\pi^*}(h_t) \quad\quad \forall h_t\in\mathcal{H}_t
+\end{equation}$$</code>
+then we would be a good deal closer to the solution of the optimality problem for finite and fixed time-horizon systems. <br>
+Puterman comes in our aid once again, with theorem 4.3.4. <br></p>
+
+<p>Let <code>$\{v^t_*\}_{t=1}^T$</code> be a solution of the optimality equations and suppose that <code>$\pi^*=(d_1^*, \dots, d_{T-1}^*)\in\Pi^{HR}$</code> satisfies
+<code>$$\begin{equation}\begin{split}
+&amp;\mathbb{E}_{\pi^*}\left[R_{t+1}\:|\:H_t=h_t\right] + \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_{\pi^*}(h_t, s, a) \: b_{d_t^*(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t) = \\ &amp;\quad\quad\max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\}
+\end{split}\label{trial}
+\end{equation}$$</code>
+for <code>$t\in\{1,\dots,T\}$</code>. Then
+<code>$$\begin{equation}
+v^t_*(h_t) = v^t_{\pi^*}(h_t) \quad \quad \forall h_t \in\mathcal{H}_t, \: \forall t\in\{1,\dots,T\}
+\end{equation}$$</code>
+which implies that <code>$\pi^*$</code> is an <strong>optimal policy</strong>. <br></p>
+
+<h4 id="is-randomization-truly-necessary">Is randomization truly necessary?</h4>
+
+<p>This result can be further improved using a simple calculus lemma: let <code>$\{w_i\}_{i=1}^K$</code> be a collection of real numbers and let <code>$\{q_i\}_{i=1}^K$</code> be a probability distribution over <code>$\{1,\dots, K\}$</code> (i.e. <code>$q_i\in[0,1]$</code> and <code>$\sum_i q_i=1$</code>); then
+<code>$$\begin{equation}
+\max \{w_i\}_{i=1}^K \geq \sum_{i=1}^K q_i w_i
+\end{equation}$$</code></p>
+
+<p>For each <code>$t\in\{1,\dots, T-1\}$</code> and <code>$h_t\in\mathcal{H}_t$</code> pick <code>$a_t^*\in\mathcal{A}$</code> such that
+<code>$$\begin{equation}
+a_t^*(h_t) \in \underset{a\in\mathcal{A}}{\mathrm{argmax}} \bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\}
+\end{equation}$$</code>
+<details>
+<summary>For those of you who not familiar with the <code>argmax</code> notation&hellip;</summary>
+<br> If <code>$f:X\to Y$</code> is a function then
+<code>$$\begin{equation}
+\underset{x\in X}{\mathrm{argmax}}\: f(x)
+\end{equation}$$</code>
+is the set of <strong>maximum points</strong> of <code>$f$</code>. In other words, if
+<code>$$\begin{equation}
+\bar{x}\in \underset{x\in X}{\mathrm{argmax}} f(x)
+\end{equation}$$</code>
+then
+<code>$$\begin{equation}
+f(\bar{x})=\max_{x\in X} f(x)
+\end{equation}$$</code>
+A function can have multiple maximum points, that is why <code>argmax</code> stands for a set.
+<br>
+</details></p>
+
+<p>Let <code>$\pi^*=(d_1^*, \dots, d_{T-1}^*)\in\Pi^{HR}$</code> be an optimal policy which satisfies equation <code>$\ref{trial}$</code>. Define
+<code>$$
+\begin{equation}
+d_t^{**}(h_t) = a^{*}_t(h_t)
+\end{equation}$$</code>
+for all <code>$t\in\{1,\dots, T-1\}$</code> with <code>$d_t^{**}\in D^{HD}$</code>.</p>
+
+<p>Let <code>$\pi^{**}=(d^{**}_1, \dots, d^{**}_{T-1})\in\Pi^{HD}$</code> be the deterministic history-dependent policy shaped by these decision rules.
+It can be proved, using backward induction, that <code>$\pi^{**}$</code> satisfies equation <code>$\ref{trial}$</code> too. Then
+<code>$$\begin{equation}
+\begin{split}
+&amp;v^t_{\pi^{**}}(h_t) = \mathbb{E}_{\pi^{**}}\left[R_{t+1}\:|\:H_t=h_t\right] + \sum_{s\in\mathcal{S}}v^{t+1}_{\pi^{**}}(h_t, s, a_t^{**}) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a_t^{*}, \, H_t = h_t) = \\
+&amp;\quad\quad =\max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\} \geq \\
+&amp;\quad\quad\geq\sum_{a\in\mathcal{A}} b_{d^{*}(h_t)}(a)\bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\} =\\
+&amp;\quad\quad =\sum_{a\in\mathcal{A}} b_{d^{*}(h_t)}(a)\bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_{\pi^*}(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\} =\\
+&amp;\quad\quad = \mathbb{E}_{\pi^*}\left[R_{t+1}\:|\:H_t=h_t\right] + \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_{\pi^*}(h_t, s, a) \: b_{d_t^*(h_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)= \\
+&amp;\quad\quad = v_{\pi^*}^t(h_t)
+\end{split}
+\end{equation}$$</code>
+We have thus shown that it is sufficient to search among <em>deterministic</em> history-dependent policies! In other words (or symbols, if you prefer):
+<code>$$\begin{equation}
+v_*^t(h_t):=\sup_{\pi\in\Pi^{HR}}v_{\pi}^t(h_t)=\sup_{\alpha\in\Pi^{HD}}v_{\alpha}^t(h_t)
+\end{equation}$$</code></p>
+
+<p>Furthermore, we have provided a <em>constructive</em> procedure to build a deterministic history-dependent policy under the assumption that the number of actions available to the agent is <em>finite</em>. We can thus get rid of the <code>sup</code>:
+<code>$$\begin{equation}
+v_*^t(h_t):=\max_{\alpha\in\Pi^{HD}}v_{\alpha}^t(h_t)
+\end{equation}$$</code></p>
+
+<h4 id="history-is-overrated">History is overrated</h4>
+
+<p>We can take it one step further levering the following assumptions:</p>
+
+<ul>
+<li><code>$R_{t+1}$</code> depends only on <code>$S_{t}$</code> and <code>$A_t$</code>;</li>
+<li><code>$S_{t+1}$</code> depends only on <code>$S_{t}$</code> and <code>$A_t$</code>;</li>
+</ul>
+
+<p>for all <code>$t\in\{1,\dots,T-1\}$</code>.</p>
+
+<p>Mathematically, this entails the following equalities:
+<code>$$\begin{equation}\begin{split}
+\mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:H_t=h_t\right] &amp;= \mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:S_t=s_t\right] \\
+\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t) &amp;=\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)
+\end{split}\end{equation}$$</code></p>
+
+<p>These simplifications can be now used to show that <code>$v_*^t$</code> depends on <code>$h_t$</code> only through <code>$s_t$</code>, the latest environment state.</p>
+
+<p>We will prove it by backward induction.
+For <code>$t=T$</code> we have:
+<code>$$\begin{equation}
+v_*^T(h_T) = r_T(s_T)
+\end{equation}$$</code>
+which clearly satisfies the thesis. <br>
+Suppose now that our claim holds for all times greater than a certain <code>$t$</code>. By definition:
+<code>$$\begin{equation}\begin{split}
+v^t_*(h_t) &amp;= \max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:H_t=h_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)\bigg\} = \\
+&amp;= \max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:S_t=s_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(h_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\}
+\end{split}\end{equation}$$</code>
+Using the induction hypothesis we get:
+<code>$$\begin{equation}
+v^t_*(h_t) = \max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:S_t=s_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(s_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\}
+\end{equation}$$</code>
+which easily proves our thesis.</p>
+
+<p>Formally, we have proved that:
+<code>$$\begin{equation}
+v_*^t(h_t):=\max_{\pi\in\Pi^{HD}}v_{\pi}^t(h_t)=\max_{\alpha\in\Pi^{MD}}v_{\alpha}^t(s_t)
+\end{equation}$$</code></p>
+
+<p>A small remark: we have assumed that rewards and transitions were markovian and we have showed that the best deterministic markovian policy can aim at the same return of the best history-dependent randomized policy. Using the exact same steps we can show that if rewards and transitions depend on the last <code>$k\in\mathbb{N}$</code> steps than a deterministic policy using only the <code>$k$</code> most recent states can achieve the greatest return - the easy adaptation of our previous argument is left to the keen reader.</p>
+
+<p>Before questioning if we can push it even further, using stationary policies, it is worth to spell out the <em>backward induction algorithm</em>, which computes the optimal value function for a problem with fixed and finite time-horizon.
+The algorithm determines
+<code>$$\begin{equation}
+A^*_t(s_t):= \underset{a\in\mathcal{A}}{\mathrm{argmax}} \bigg\{\mathbb{E}\left[R_{t+1}\:|\:S_t=s_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(s_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\}
+\end{equation}$$</code>
+for all <code>$t\in\{1,\dots, T-1\}$</code> and <code>$s_t\in\mathcal{S}$</code> - we get deterministic markovian policies for free!</p>
+
+<p>Here is the pseudo-code:</p>
+
+
+<figure >
+    
+        <img src="/image/rl-tutorial-01/backward-induction-algorithm.png" />
+    
+    
+</figure>
+
+
+<p>A quick count tells us that we are going to evaluate line 10 right-side expression <code>$(T-1)|\mathcal{S}||\mathcal{A}|$</code> times, which is way better than evaluating and comparing each one of the possible <code>$|\mathcal{S}|^{|\mathcal{A}|(T-1)}$</code> different deterministic markovian policies!</p>
+
+<h4 id="time-dependency-is-a-nasty-beast">Time-dependency is a nasty beast</h4>
+
+<p>Considering the direction we have been pursuing so far, it seems only natural to expect that we can improve our results even further, establishing that is sufficient to consider stationary deterministic markov policies, without even bothering to choose a different decision rule for each step of our agent simulation.
+Unfortunately <em>this is not the case</em> for simulations with a <em>fixed</em> and finite time-horizon. <br>
+Our final reward, <code>$r_T$</code>, does in fact violate a key hypothesis which is needed to restrict our attention to stationary policies: rewards have to be <em>time-independent</em>.</p>
+
+<p>You can easily see that this is not the case in our current scenario.
+Consider, for example, a Candy Crush game - you have a predetermined number of moves to achieve a certain objective swapping adiacent candies to trigger events.
+If you manage to line up 5 candies of the same color with a single move you get a powerful bonus - you can swap this crystal ball with a candy of any color and see all similar candies explode instantaneously (without mentioning further available combos with other special candies!).</p>
+
+
+<figure >
+    
+        <img src="/image/rl-tutorial-01/candy_crush_5.jpg" width="50%" />
+    
+    
+</figure>
+
+
+<p>It goes without saying that if you have the possibility to line up 5 candies of the same color at the start of the game it is always convenient to do so. Would it be equally convenient if you had just <em>one</em> move left and there is the possibility to fulfill the game quest doing a normal 3-combo?
+No, it wouldn&rsquo;t - and this clearly illustrates how a fixed and arbitrary time-horizon prevents us from finding an optimal policy in the stationary class in a general setting.</p>
+
+<p>Not everything is lost: it is still possible to formulate problems with a finite time-horizon without using time-dependent rewards - the termination of the simulation needs to be triggered by <em>a set of terminal states</em> instead of being associated with a specific time instant. <br>
+A chess game, for example, has a finite time-horizon even though the length of the game itself is a random variable - we just need to properly define those states (or sequence of states) associated with the end of a game and we can still claim that our rewards are time-indipendent.
+We shall see that structuring our problems around time-indipendent rewards will allow us to prove that we can restrict our attention to stationary deterministic Markov policies without compromising on our chances to find an overall optimal policy.</p>
+
+<h3 id="bellman-equation">Bellman equation</h3>
+
+<p>The state-value function for a policy <code>$\pi$</code> satisfies a recursive relationship similar (in spirit) to the one satisfied by the return <code>$G_t$</code>. We have
+<code>$$\begin{equation}\begin{split}
+v_\pi(s) &amp;= \mathbb{E}_{\pi}\left[G_t\:\middle|\:S_t=s\right]= \\
+&amp;= \mathbb{E}_{\pi}\left[R_{t+1} +\gamma G_{t+1}\:\middle|\:S_t=s\right]= \\
+&amp;= \mathbb{E}_{\pi}\left[R_{t+1}\:\middle|\:S_t=s\right] +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]= \\
+&amp;= \sum_{r\in\mathcal{R}}r\,\mathbb{P}\left( R_{t+1}=r\:\middle|\: S_{t}=s \right) +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]
+\end{split}
+\end{equation}$$</code>
+But
+<code>$$\begin{equation}\begin{split}
+\mathbb{P}\left( R_{t+1}=r\:\middle|\: S_{t}=s \right) &amp;=
+\sum_{s'\in\mathcal{S}}\mathbb{P}\left( R_{t+1}=r,\, S_{t+1}=s'\:\middle|\: S_{t}=s \right) = \\
+&amp;= \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A(s)}}\mathbb{P}\left( R_{t+1}=r,\, S_{t+1}=s'\:\middle|\: S_{t}=s, A_{t}=a \right) \mathbb{P}\left( A_{t}=a\:\middle|\: S_{t}=s \right)= \\
+&amp;= \sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A(s)}} p(r,\,s'\:|\:s,\,a)\pi(a\:|\:s)
+\end{split}
+\end{equation}$$</code>
+Thus
+<code>$$\begin{equation}
+v_\pi(s) = \sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}}\sum_{a\in\mathcal{A(s)}} \left[r\,p(r,\,s'\:|\:s,\,a)\pi(a\:|\:s)\right] +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]
+\end{equation}$$</code>
+We can exchange the sum order and, keeping in mind that <code>$\sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}}p(r,\,s'\:|\:s,\,a)=1$</code> and <code>$\sum_{a\in\mathcal{A(s)}}\pi(a\:|\:s)=1$</code>, we get
+<code>$$\begin{equation}
+v_\pi(s) = \sum_{a\in\mathcal{A}(s)}\pi(a\:|\:s)\sum_{r\in\mathcal{R}}\sum_{s'\in\mathcal{S}} p(r,\,s'\:|\:s,\,a)\bigg[r+\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:\middle|\:S_t=s\right]\bigg]
+\end{equation}$$</code>
+This is called <strong>Bellman equation for <code>$v_\pi$</code></strong>.</p>
+
+                </section>
+            </article>
+
+            
+                <a class="twitter" href="https://twitter.com/intent/tweet?text=http%3a%2f%2flpalmieri.com%2fposts%2frl-introduction-01%2f - Reinforcement%20Learning%3a%20a%20comprehensive%20introduction%20%5bPart%201%5d "><span class="icon-twitter"> tweet</span></a>
+
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> Share</span>
+</a>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'lpalmieri'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/LukeMathWalker">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+    <a class="symbol" href="https://www.linkedin.com/in/luca-palmieri/">
+        <i class="fa fa-linkedin-square"></i>
+    </a>
+    
+    <a class="symbol" href="https://www.twitter.com/algo_luca">
+        <i class="fa fa-twitter-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2018 <i class="fa fa-heart" aria-hidden="true"></i> Luca Palmieri
+    
+    </p>
+    <p class="small">
+        Powered by <a href="http://www.gohugo.io/">Hugo</a> Theme By <a href="https://github.com/nodejh/hugo-theme-cactus-plus">nodejh</a>
+    </p>
+</footer>
+
+        </section>
+
+        <script src="http://lpalmieri.com/js/jquery-2.2.4.min.js"></script>
+<script src="http://lpalmieri.com/js/main.js"></script>
+<script src="http://lpalmieri.com/js/highlight.min.js"></script>
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+    TeX: { equationNumbers: { autoNumber: "all" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+  });
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i = 0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+
+  MathJax.Hub.Config({
+
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+  });
+</script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-112817730-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+
+
+
+    </body>
+</html>

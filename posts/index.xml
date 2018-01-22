@@ -22,5 +22,14 @@
 Defining the event as &amp;ldquo;an historic achievement&amp;rdquo; is an understatement: the game of Go proved to be way more difficult for machines than chess - too many possible configurations of the game board, an impossible task to solve with brute force alone.</description>
     </item>
     
+    <item>
+      <title>Reinforcement Learning: a comprehensive introduction [Part 1]</title>
+      <link>http://lpalmieri.com/posts/rl-introduction-01/</link>
+      <pubDate>Thu, 28 Dec 2017 21:36:08 +0100</pubDate>
+      
+      <guid>http://lpalmieri.com/posts/rl-introduction-01/</guid>
+      <description>Policies Decision rules A randomized history-dependent decision rule $d_t$ is a mapping between the history of our system up to the current state $t$ and the probability of selecting each possible action. What is the history of the system? Nothing more than the sequence of past actions and states, assuming that past rewards do not influence our future behaviour. We shall denote the history of our system up to time $t$ as $$\begin{equation}h_t=(s_1, a_1, s_2, \dots, a_{t-1}, s_t) \quad\quad t\in\{1, 2, \dots\}\end{equation}$$ or, using a little bit of recursion, $$\begin{equation}\begin{split} h_t &amp;amp;= (h_{t-1}, a_{t-1}, s_t) \quad\quad\quad\quad t\in\{2, \dots\} \\ h_1 &amp;amp;= s_1 \end{split}\end{equation}$$ The set of histories can be defined as $$\begin{equation}\begin{split} \mathcal{H}_t &amp;amp;= \mathcal{S}\times \prod_2^t (\mathcal{A}\times \mathcal{S}) \quad\quad t\in\{2, \dots\} \\ \mathcal{H}_1 &amp;amp;= \mathcal{S} \end{split}\end{equation}$$ or, equivalenty, $$\begin{equation}\begin{split} \mathcal{H}_t &amp;amp;=\mathcal{H}_{t-1}\times \mathcal{A}\times \mathcal{S} \quad\quad t\in\{2, \dots\} \\ \mathcal{H}_1 &amp;amp;= \mathcal{S} \end{split}\end{equation}$$ We can thus formalize the concept of history-dependent decision rule as a function $$\begin{equation} d_t: \mathcal{H}_t \to \mathcal{P}(A) \end{equation}$$ where $\mathcal{P}(A)$ denotes the collection of probability distributions over the set of actions $\mathcal{A}$.</description>
+    </item>
+    
   </channel>
 </rss>

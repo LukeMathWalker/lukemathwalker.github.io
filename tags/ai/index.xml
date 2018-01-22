@@ -6,7 +6,7 @@
     <description>Recent content in Ai on Travel journal of an AI adventure</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-uk</language>
-    <lastBuildDate>Fri, 19 Jan 2018 13:00:00 +0100</lastBuildDate>
+    <lastBuildDate>Mon, 22 Jan 2018 13:00:00 +0100</lastBuildDate>
     
 	<atom:link href="http://lpalmieri.com/tags/ai/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,7 +14,7 @@
     <item>
       <title>Reinforcement Learning: a comprehensive introduction [Part 0]</title>
       <link>http://lpalmieri.com/posts/rl-introduction-00/</link>
-      <pubDate>Fri, 19 Jan 2018 13:00:00 +0100</pubDate>
+      <pubDate>Mon, 22 Jan 2018 13:00:00 +0100</pubDate>
       
       <guid>http://lpalmieri.com/posts/rl-introduction-00/</guid>
       <description>You might be tired of hearing of it by now, but it&amp;rsquo;s impossible to start a blog series on Reinforcement Learning without mentioning the game of Go in the first 5 lines. It all started in May 2016: AlphaGo, a computer program developed by Google, won 4 Go games (in a series of 5) against Lee Sedol, the current World Champion. (link)

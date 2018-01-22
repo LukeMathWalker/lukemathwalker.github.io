@@ -1,0 +1,14 @@
+\documentclass[preview]{standalone}
+\usepackage{varwidth}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\begin{document}
+	\begin{equation}
+	\begin{split}
+	v_\pi(s) &= \mathbb{E}_{\pi}\left[G_t\:|\:S_t=s\right]= \\
+	&= \mathbb{E}_{\pi}\left[R_{t+1} +\gamma G_{t+1}\:|\:S_t=s\right]= \\
+	&= \mathbb{E}_{\pi}\left[R_{t+1}\:|\:S_t=s\right] +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:|\:S_t=s\right]= \\
+	&= \sum_{r\in\mathcal{R}}r\,\mathbb{P}\left( R_{t+1}=r\:|\: S_{t}=s \right) +\gamma \mathbb{E}_{\pi}\left[G_{t+1}\:|\:S_t=s\right]
+	\end{split}
+	\end{equation}              
+\end{document}

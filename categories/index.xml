@@ -10,5 +10,23 @@
 	<atom:link href="http://lpalmieri.com/categories/index.xml" rel="self" type="application/rss+xml" />
     
     
+    <item>
+      <title>Reinforcement Learning</title>
+      <link>http://lpalmieri.com/categories/reinforcement-learning/</link>
+      <pubDate>Fri, 19 Jan 2018 13:00:00 +0100</pubDate>
+      
+      <guid>http://lpalmieri.com/categories/reinforcement-learning/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Tutorial</title>
+      <link>http://lpalmieri.com/categories/tutorial/</link>
+      <pubDate>Fri, 19 Jan 2018 13:00:00 +0100</pubDate>
+      
+      <guid>http://lpalmieri.com/categories/tutorial/</guid>
+      <description></description>
+    </item>
+    
   </channel>
 </rss>

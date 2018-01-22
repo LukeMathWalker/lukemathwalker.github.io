@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Posts on Travel journal of an AI adventure</title>
-    <link>http://lpalmieri.com/posts/</link>
-    <description>Recent content in Posts on Travel journal of an AI adventure</description>
+    <title>Ai on Travel journal of an AI adventure</title>
+    <link>http://lpalmieri.com/tags/ai/</link>
+    <description>Recent content in Ai on Travel journal of an AI adventure</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-uk</language>
     <lastBuildDate>Fri, 19 Jan 2018 13:00:00 +0100</lastBuildDate>
     
-	<atom:link href="http://lpalmieri.com/posts/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://lpalmieri.com/tags/ai/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>

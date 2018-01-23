@@ -3,13 +3,18 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>http://lpalmieri.com/posts/rl-introduction-00/</loc>
-    <lastmod>2018-01-22T13:00:00+01:00</lastmod>
+    <loc>http://lpalmieri.com/posts/rl-introduction-02/</loc>
+    <lastmod>2018-01-23T14:00:00+01:00</lastmod>
   </url>
   
   <url>
     <loc>http://lpalmieri.com/posts/rl-introduction-01/</loc>
-    <lastmod>2017-12-28T21:36:08+01:00</lastmod>
+    <lastmod>2018-01-23T13:00:00+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://lpalmieri.com/posts/rl-introduction-00/</loc>
+    <lastmod>2018-01-22T13:00:00+01:00</lastmod>
   </url>
   
   <url>
@@ -41,7 +46,7 @@
   
   <url>
     <loc>http://lpalmieri.com/posts/</loc>
-    <lastmod>2018-01-22T13:00:00+01:00</lastmod>
+    <lastmod>2018-01-23T14:00:00+01:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -59,7 +64,7 @@
   
   <url>
     <loc>http://lpalmieri.com/</loc>
-    <lastmod>2018-01-22T13:00:00+01:00</lastmod>
+    <lastmod>2018-01-23T14:00:00+01:00</lastmod>
     <priority>0</priority>
   </url>
   

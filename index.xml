@@ -6,10 +6,30 @@
     <description>Recent content on Travel journal of an AI adventure</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-uk</language>
-    <lastBuildDate>Mon, 22 Jan 2018 13:00:00 +0100</lastBuildDate>
+    <lastBuildDate>Tue, 23 Jan 2018 14:00:00 +0100</lastBuildDate>
     
 	<atom:link href="http://lpalmieri.com/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Reinforcement Learning: optimal policies [Part 2]</title>
+      <link>http://lpalmieri.com/posts/rl-introduction-02/</link>
+      <pubDate>Tue, 23 Jan 2018 14:00:00 +0100</pubDate>
+      
+      <guid>http://lpalmieri.com/posts/rl-introduction-02/</guid>
+      <description>Recap In the previous post we introduced state-value and history-value functions for a policy $\pi$ which allow us to compute the expected return at different starting points in time. They can be used to compare the effectiveness of different policies, which plays well with our intent of finding the optimal policy for the task at hand.
+How do we compute them? We derived a generalized form of the Bellman equation which, under a set of stronger hypotheses on the agent and on the environment, simplifies to a manageable expression which we feel confident to solve.</description>
+    </item>
+    
+    <item>
+      <title>Reinforcement Learning: policies and rewards [Part 1]</title>
+      <link>http://lpalmieri.com/posts/rl-introduction-01/</link>
+      <pubDate>Tue, 23 Jan 2018 13:00:00 +0100</pubDate>
+      
+      <guid>http://lpalmieri.com/posts/rl-introduction-01/</guid>
+      <description>Recap  In the previous post we introduced:
+ states, $\{S_t\}_{t=1}^{T}$; actions, $\{A_t\}_{t=1}^{T}$; rewards, $\{R_{t+1}\}_{t=1}^{T}$.  We remarked that states and rewards are environment-related random variables: the agent has no way to interfere with the reward mechanism or modify the state transition resulting as a consequence of one of its actions. Actions are the only domain entirely under the responsibility of the agent - specifying the probability distribution of $A_t$ conditioned on all the possible values of $S_t, \, A_{t-1}, \, \dots, S_{1}$ for every $t\in\mathbb{N}$ is exactly equivalent to a full specification of the agent behaviour - we shall take a closer look at the issue in this post.</description>
+    </item>
     
     <item>
       <title>Reinforcement Learning: a comprehensive introduction [Part 0]</title>
@@ -20,15 +40,6 @@
       <description>You might be tired of hearing of it by now, but it&amp;rsquo;s impossible to start a blog series on Reinforcement Learning without mentioning the game of Go in the first 5 lines. It all started in May 2016: AlphaGo, a computer program developed by Google, won 4 Go games (in a series of 5) against Lee Sedol, the current World Champion. (link)
   
 Defining the event as &amp;ldquo;an historic achievement&amp;rdquo; is an understatement: the game of Go proved to be way more difficult for machines than chess - too many possible configurations of the game board, an impossible task to solve with brute force alone.</description>
-    </item>
-    
-    <item>
-      <title>Reinforcement Learning: a comprehensive introduction [Part 1]</title>
-      <link>http://lpalmieri.com/posts/rl-introduction-01/</link>
-      <pubDate>Thu, 28 Dec 2017 21:36:08 +0100</pubDate>
-      
-      <guid>http://lpalmieri.com/posts/rl-introduction-01/</guid>
-      <description>Policies Decision rules A randomized history-dependent decision rule $d_t$ is a mapping between the history of our system up to the current state $t$ and the probability of selecting each possible action. What is the history of the system? Nothing more than the sequence of past actions and states, assuming that past rewards do not influence our future behaviour. We shall denote the history of our system up to time $t$ as $$\begin{equation}h_t=(s_1, a_1, s_2, \dots, a_{t-1}, s_t) \quad\quad t\in\{1, 2, \dots\}\end{equation}$$ or, using a little bit of recursion, $$\begin{equation}\begin{split} h_t &amp;amp;= (h_{t-1}, a_{t-1}, s_t) \quad\quad\quad\quad t\in\{2, \dots\} \\ h_1 &amp;amp;= s_1 \end{split}\end{equation}$$ The set of histories can be defined as $$\begin{equation}\begin{split} \mathcal{H}_t &amp;amp;= \mathcal{S}\times \prod_2^t (\mathcal{A}\times \mathcal{S}) \quad\quad t\in\{2, \dots\} \\ \mathcal{H}_1 &amp;amp;= \mathcal{S} \end{split}\end{equation}$$ or, equivalenty, $$\begin{equation}\begin{split} \mathcal{H}_t &amp;amp;=\mathcal{H}_{t-1}\times \mathcal{A}\times \mathcal{S} \quad\quad t\in\{2, \dots\} \\ \mathcal{H}_1 &amp;amp;= \mathcal{S} \end{split}\end{equation}$$ We can thus formalize the concept of history-dependent decision rule as a function $$\begin{equation} d_t: \mathcal{H}_t \to \mathcal{P}(A) \end{equation}$$ where $\mathcal{P}(A)$ denotes the collection of probability distributions over the set of actions $\mathcal{A}$.</description>
     </item>
     
   </channel>

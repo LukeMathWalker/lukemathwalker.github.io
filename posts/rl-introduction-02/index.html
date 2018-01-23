@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en-uk">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		
+		<meta name="author" content="Luca Palmieri">
+		<meta name="description" content="A personal blog focused on AI content and tutorials.">
+		<meta name="generator" content="Hugo 0.34" />
+		<title>Reinforcement Learning: optimal policies [Part 2] &middot; Travel journal of an AI adventure</title>
+		<link rel="shortcut icon" href="http://lpalmieri.com/images/favicon.ico">
+		<link rel="stylesheet" href="http://lpalmieri.com/css/style.css">
+		<link rel="stylesheet" href="http://lpalmieri.com/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="http://lpalmieri.com/css/font-awesome.min.css">
+		
+
+		
+		<link href="http://lpalmieri.com/index.xml" rel="alternate" type="application/rss+xml" title="Travel journal of an AI adventure" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='http://lpalmieri.com/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='http://lpalmieri.com/posts'>Archive</a>
+  
+	<a href='http://lpalmieri.com/about'>About</a>
+
+	
+
+	
+	<a class="cta" href="http://lpalmieri.com/index.xml">Subscribe</a>
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        Reinforcement Learning: optimal policies [Part 2]
+                    </h1>
+                    <h2 class="headline">
+                    Jan 23, 2018 14:00
+                    · 2335 words
+                    · 11 minute read
+                      <span class="tags">
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                  
+                    <div id="toc">
+                      <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#recap">Recap</a></li>
+<li><a href="#decision-rules-a-breakdown">Decision rules: a breakdown</a></li>
+<li><a href="#policies-a-breakdown">Policies: a breakdown</a></li>
+<li><a href="#optimal-policies">Optimal policies</a></li>
+<li><a href="#return-a-different-viewpoint">Return: a different viewpoint</a></li>
+<li><a href="#history-is-overrated">History is overrated</a></li>
+<li><a href="#interlude">Interlude</a></li>
+<li><a href="#optimality-for-fixed-finite-time-horizons">Optimality for fixed &amp; finite time-horizons</a></li>
+<li><a href="#optimality-for-arbitrary-time-horizons">Optimality for arbitrary time-horizons</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+                    </div>
+                  
+                
+                <section id="post-body">
+                    
+
+<h3 id="recap">Recap</h3>
+
+<p>In the previous post we introduced state-value and history-value functions for a policy <code>$\pi$</code> which allow us to compute the <strong>expected return</strong> at different starting points in time. They can be used to <strong>compare</strong> the effectiveness of different policies, which plays well with our intent of finding the <strong>optimal</strong> policy for the task at hand.</p>
+
+<p>How do we compute them? <br>
+We derived a generalized form of the Bellman equation which, under a set of stronger hypotheses on the agent and on the environment, simplifies to a manageable expression which we feel confident to solve.</p>
+
+<p>It remains to prove that those stronger hypotheses are reasonable and that they do not damage our chances of finding the overall <strong>optimal</strong> policy. <br>
+This will be our focus for today.</p>
+
+<h3 id="decision-rules-a-breakdown">Decision rules: a breakdown</h3>
+
+<p>We introduced decision rules as mappings between <code>$\mathcal{H}_t$</code>, the set of possible histories of our system up to time <code>$t$</code>, and <code>$\mathcal{P}(\mathcal{A})$</code>, the collection of probability distributions over the set of actions:
+<code>$$\begin{equation}
+d_t: \mathcal{H}_t \to \mathcal{P}(\mathcal{A})
+\end{equation}$$</code>
+This definition provides the greatest amount of generality and flexibility - we usually refer to this class of decision rules as <strong>history-dependent randomized decision rules</strong>: every action and event up to the current time instant is taken into account before specifying the agent preferences for the next action. <br>
+This class of decision rules will be denoted by <code>$D^{HR}_t$</code>.</p>
+
+<p>Everything comes with a price: it is computationally very expensive to keep track of a function whose input dimension grows exponentially in time. <br>
+Consider, for example, a state space <code>$\mathcal{S}$</code> with five elements equipped with an action set <code>$\mathcal{A}$</code> composed of three choices. <br>
+For <code>$t=1$</code> we have 5 elements in <code>$\mathcal{H}_1$</code> (we take <code>$t=1$</code> as starting state). <br>
+For <code>$t=2$</code> we have 5x3x5=75 elements in <code>$\mathcal{H}_2$</code>. <br>
+For an arbitrary <code>$t\in\mathbb{N}$</code> we have
+<code>$$\begin{equation}
+|\mathcal{H}_t| = 5^t 3^{t-1}
+\end{equation}$$</code>
+which, you surely agree with me, is going to become problematic soon enough, even if the system is ridiculously small. <br></p>
+
+<p>A much more convenient class of decision rules is the collection of <strong>randomized markovian decision rules</strong>, which we denote by <code>$D^{MR}$</code>: the action choice is chosen randomly from a probability distribution depending only on the <em>current</em> state of the system (no <code>$t$</code> subscript this time!).<br>
+This can be stated formally saying that every <code>$d\in D^{MR}$</code> if a function from <code>$\mathcal{S}$</code> to <code>$\mathcal{P}(\mathcal{A})$</code>. <br>
+The computational gain is evident: a markovian randomized decision rule <code>$d$</code> only requires <code>$|\mathcal{S}||\mathcal{A}|$</code> memory slots - a much more feasible choice. <br></p>
+
+<h3 id="policies-a-breakdown">Policies: a breakdown</h3>
+
+<p>To each class of decision rules we can associate a class of policies:</p>
+
+<ul>
+<li><code>$\pi$</code> is a <strong>history-dependent randomized policy</strong> if
+<code>$$\begin{equation}
+\pi = (d_1, \, d_2, \, \dots) \quad \quad \text{where } d_i\in D^{HR}_i
+\end{equation}$$</code>
+We shall refer to this class using <code>$\Pi^{HR}$</code>;</li>
+<li><code>$\pi$</code> is a <strong>markovian randomized policy</strong> if
+<code>$$\begin{equation}
+\pi = (d_1, \, d_2, \, \dots) \quad \quad \text{where } d_i\in D^{MR}
+\end{equation}$$</code>
+We shall refer to this class using <code>$\Pi^{MR}$</code>.</li>
+</ul>
+
+<p>Markovian randomized decision rules are a subset of history-dependent randomized decision rules, which implies that
+<code>$$\begin{equation}
+\Pi^{MR} \subset \Pi^{HR}
+\end{equation}$$</code></p>
+
+<p>Before proceeding anything further is time to give a proper definition of <strong>optimal</strong> policy.</p>
+
+<h3 id="optimal-policies">Optimal policies</h3>
+
+<p>Using the concept of state-value function we can affirm that a policy <code>$\pi$</code> is better than a policy <code>$\pi'$</code> if
+<code>$$\begin{equation}
+v^1_\pi(s) \geq v^1_{\pi'}(s) \quad \forall s\in\mathcal{S}
+\end{equation}$$</code>
+where <code>$s$</code> is the initial state of our system. <br></p>
+
+<p>A policy <code>$\pi$</code> is said to be <strong>optimal</strong> if
+<code>$$\begin{equation}
+v^1_\pi(s) \geq v^1_{\pi'}(s) \quad \forall s\in\mathcal{S}
+\end{equation}$$</code>
+for all <code>$\pi'\in\Pi^{HR}$</code> [remember that randomized history-dependent policies are the most general class!].</p>
+
+<p>It is important to remark that <code>$v_{(\cdot)}$</code> is an <em>expected value</em> - even if a policy <code>$\pi$</code> is better <em>on average</em> than a policy <code>$\pi'$</code> it might still happen than an experiment using policy <code>$\pi$</code> produces a higher return compared to an experiment using policy <code>$\pi'$</code>: stochasticity baby! <br></p>
+
+<p>We can now ask the following question: are we compromising our search for an optimal policy if we restrict our attention to markovian randomized policies? <br>
+In other words, are we going to achieve a <strong>lower</strong> expected return if we focus on policies which do not use the whole system history before committing to an action?</p>
+
+<p>It depends on the environment - we shall see why.</p>
+
+<h3 id="return-a-different-viewpoint">Return: a different viewpoint</h3>
+
+<p>Let&rsquo;s recall the definition of state-value function for a policy <code>$\pi$</code>:
+<code>$$\begin{equation}
+\begin{split}
+v_\pi^1(s_1) &amp;:= \mathbb{E}[G_1 \,|\, S_1=s_1] = \\
+&amp;= \sum_{i=1}^{T} \gamma^{i-1}\, \mathbb{E}[R_{i+1}\,|\, S_1=s_1]
+\end{split}
+\end{equation}$$</code>
+where <code>$s_1\in\mathcal{S}$</code>, <code>$\,\gamma\in[0, 1)$</code> and <code>$T\in\mathbb{N}\cup\{+\infty\}$</code>. <br>
+Using the definition of expectation we get:
+<code>$$\begin{equation}
+v_\pi^1(s_1) := \sum_{i=1}^{T} \gamma^{i-1}\, \sum_r r \, \mathbb{P}(R_{i+1}=r\,|\, S_1=s_1)
+\end{equation}$$</code>
+which can be decomposed using the law of total probability
+<code>$$\begin{equation}\label{return-general}
+v_\pi^1(s_1) := \sum_{i=1}^{T} \gamma^{i-1}\, \sum_r r \, \sum_{s\in\mathcal{S}} \sum_{a\in\mathcal{A}} \mathbb{P}(R_{i+1}=r\,|\, A_t=a, S_t=s, S_1=s_1) \, \mathbb{P}(A_t=a, S_t=s \,|\, S_1=s_1)
+\end{equation}$$</code>
+This is were we need to introduce the first additional hypothesis on the <strong>environment</strong>: let&rsquo;s suppose that rewards are <strong>markovian</strong>. Then
+<code>$$\begin{equation}
+\mathbb{P}(R_{i+1}=r\,|\, A_t=a, S_t=s, S_1=s_1) = \mathbb{P}(R_{i+1}=r\,|\, A_t=a, S_t=s)
+\end{equation}$$</code>
+which can be plugged in equation \ref{return-general} to get
+<code>$$\begin{equation}\label{return}
+v_\pi^1(s_1) := \sum_{i=1}^{T} \gamma^{i-1}\, \sum_r r \, \sum_{s\in\mathcal{S}} \sum_{a\in\mathcal{A}} \underbrace{\mathbb{P}(R_{i+1}=r\,|\, A_t=a, S_t=s)}_{\text{environment}} \, \underbrace{\mathbb{P}(A_t=a, S_t=s \,|\, S_1=s_1)}_{\pi\text{-dependent}}
+\end{equation}$$</code>
+We have isolated the part of the equation which depends on the policy <code>$\pi$</code> - to enforce this concept let&rsquo;s mark it with a superscript:
+<code>$$\begin{equation}
+\mathbb{P}^\pi(A_t=a, S_t=s \,|\, S_1=s_1)
+\end{equation}$$</code></p>
+
+<h3 id="history-is-overrated">History is overrated</h3>
+
+<p>Now, suppose that the following holds:</p>
+
+<p><code>$\textbf{Theorem 1}$</code> - For each history-dependent randomized policy <code>$\pi$</code> and for each <code>$s_1\in\mathcal{S}$</code> there exists a markovian randomized policy <code>$\tau$</code> such that
+<code>$$\begin{equation}
+\mathbb{P}^\pi(A_t=a, S_t=s \,|\, S_1=s_1) = \mathbb{P}^\tau(A_t=a, S_t=s \,|\, S_1=s_1)
+\end{equation}$$</code>
+for every <code>$t\in\{1, 2, \dots\}$</code>, for every <code>$a\in\mathcal{A}$</code> and for every <code>$s\in\mathcal{S}$</code>.</p>
+
+<p><br>
+Using equation \ref{return} it would follow that
+<code>$$\begin{equation}
+v^1_\pi(s_1) = v^1_\tau(s_1)
+\end{equation}$$</code>
+which can be used to show that an optimal policy in the class of markovian randomized policies is just as good as an optimal policy in the class of history-dependent randomized policies!</p>
+
+<p>It is strikingly easy: let <code>$\pi^*$</code> be an optimal policy in <code>$\Pi^{HR}$</code> and let <code>$\tau^*$</code> be an optimal policy in <code>$\Pi^{MR}$</code>. <br>
+We know that <code>$\Pi^{MR}\subset\Pi^{HR}$</code> which implies that
+<code>$$\begin{equation}
+v^1_{\pi^*}(s) \geq v^1_{\tau^*}(s) \quad \quad \text{for every } s\in\mathcal{S}
+\end{equation}$$</code>
+Nonetheless, for every <code>$s\in\mathcal{S}$</code> there exists a policy <code>$\alpha_{s}$</code> in <code>$\Pi^{MR}$</code> such that
+<code>$$\begin{equation}
+v^1_{\pi^*}(s) = v^1_{\alpha_{s}}(s)
+\end{equation}$$</code>
+But <code>$\tau^*$</code> is optimal in <code>$\Pi^{MR}$</code>:
+<code>$$\begin{align}
+v^1_{\tau^*}(s) \geq v^1_{\alpha_{s}}(s) &amp;= v^1_{\pi^*}(s)\geq v^1_{\tau^*}(s) \quad \quad \text{for every } s\in\mathcal{S} \\
+\Rightarrow \quad v^1_{\pi^*}(s) &amp;= v^1_{\tau^*}(s) \quad \quad \text{for every } s\in\mathcal{S}
+\end{align}$$</code></p>
+
+<p>We have thus proved that if the environment is markovian and <strong>Theorem 1</strong> holds it is sufficient to search for an optimal policy in the class of markovian randomized policies <code>$\Pi^{MR}$</code>.</p>
+
+<p>The proof of <strong>Theorem 1</strong> is not difficult and proceeds by induction - it can be found on Peterman&rsquo;s book as Theorem 5.5.1.</p>
+
+<h3 id="interlude">Interlude</h3>
+
+
+<figure >
+    
+        <img src="https://media.giphy.com/media/26BRNqyHdCgrRPyWk/giphy.gif" width="75%" />
+    
+    
+</figure>
+
+
+<p>Let&rsquo;s pause for a second to summarize what we have achieved and what we are still missing</p>
+
+<p>We defined the concept of optimal policy as well as providing an extremely useful result to restrict the number of candidates for optimality. <br>
+Nonetheless we have not found yet an equation which gives us directly the optimal policy as a solution - we have no other way to find it, at the moment, than evaluating the state-value function of each policy in <code>$\Pi^{MR}$</code>. <br>
+Sadly, <code>$\Pi^{MR}$</code> is an infinite set, which means that we cannot find the optimal policy using brute force. <br>
+What now?</p>
+
+<p>Sometimes it is better to simplify and understand the matter at hand in a smaller context before facing the original more complex issue.</p>
+
+<p>In our case, we are going to study a reinforcement learning problem with <strong>fixed</strong> and <strong>finite</strong> time-horizon <code>$T$</code> - not a random variable, but a natural number which does change between different simulation of our agent. <br>
+We shall derive a set of equations called <strong>optimality equations</strong> whose solution, unsurprisingly, is an <strong>optimal policy</strong> in this simplified setting. <br>
+The form of the equation will suggest us a more general formulation which can be used as an optimality equation for problems with arbitrary and random time-horizon <code>$T$</code>, the ones we are genuinely interested in.</p>
+
+<p>Let&rsquo;s do it!</p>
+
+
+<figure >
+    
+        <img src="https://media.giphy.com/media/26ni7qqXPjahq4bmw/giphy.gif" width="75%" />
+    
+    
+</figure>
+
+
+<h3 id="optimality-for-fixed-finite-time-horizons">Optimality for fixed &amp; finite time-horizons</h3>
+
+<p>Suppose, as we just suggested, that <code>$T$</code> is a fixed and finite natural number. <br>
+This means that <code>$S_T$</code> is the <em>terminal</em> state of our agent: no actions to be taken once we reach that point. <br>
+We assume that there exists a terminal reward function, <code>$r_T:\mathcal{S}\to\mathbb{R}$</code>: if <code>$S_T=s$</code> is the terminal state of the simulation then the agent receives a reward equal to <code>$r_T(s)$</code>. <br></p>
+
+<p>We proved that a policy <code>$\pi$</code> is <strong>optimal</strong> if <code>$v_{\pi}^1(s)\geq v_{\alpha}^1(s)$</code> for all <code>$\alpha\in\Pi^{MR}$</code> and for all <code>$s\in\mathcal{S}$</code>. <br>
+Define
+<code>$$\begin{equation}\label{optimal_naive_sup}
+v^t_* (s_t) := \sup_{\pi\in\Pi^{MR}} v^t_\pi (s_t) \quad \forall s_t \in\mathcal{S}
+\end{equation}$$</code>
+for every <code>$t\in\{1, 2, \dots, T\}$</code>. <br>
+It follows that <code>$v^1_*$</code> is a function (<strong>not a policy</strong>, be careful!) which satisfies
+<code>$$\begin{equation}
+v_{*}^1(s)\geq v_{\alpha}^1(s) \quad \quad \forall\,\alpha\in\Pi^{MR}\, , \, \forall \, s\in\mathcal{S}
+\end{equation}$$</code></p>
+
+<p>Even though equation <code>$\ref{optimal_naive_sup}$</code> is pretty straight-forward it does not provide, by itself, a way to actually <strong>compute</strong> <code>$v^t_*$</code>. <br>
+Luckily enough, it can be proved <em>(Puterman - <strong>Th. 4.3.2</strong>)</em> that <code>$\{v^t_*\}_{t=1}^T$</code> are a solution of the following <strong>system</strong> of equations:
+<code>$$\begin{equation}\begin{split}
+&amp;\forall t\in\{1,\dots, T-1\}: \\
+&amp;v^t_*(s_t) = \max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:A_t=a,\: S_t=s_t\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(s) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\} \\
+&amp;v^T_*(s_T) = r_T(s_T)
+\end{split}\label{optimality-finite}\end{equation}$$</code>
+where we have implictly assumed that state transitions are markovian, i.e.
+<code>$$\begin{equation}
+\mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t) = \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, H_t = h_t)
+\end{equation}$$</code>
+We have used a <code>$\max$</code> over <code>$\mathcal{A}$</code> because we are also assuming that the set of possible actions is finite.</p>
+
+<p>Equations \ref{optimality-finite} are usually referred as <strong>optimality equations</strong>. <br>
+We shall see that they can be used to actually compute <code>$v^t_*$</code>, which for the moment stands as an upper-bound on the corresponding function for our hypothetical optimal policies. If we could prove that there exists a policy <code>$\pi^*$</code> such that
+<code>$$\begin{equation}
+v^t_*(s_t) = v^t_{\pi^*}(s_t) \quad\quad \forall s_t\in\mathcal{S}
+\end{equation}$$</code>
+then we would be a good deal closer to the solution of the optimality problem for finite and fixed time-horizon systems. <br>
+Puterman comes in our aid once again, with <strong>Theorem 4.3.3</strong> (which slightly generalize). <br></p>
+
+<p><strong>Theorem 4.3.3</strong> - Let <code>$\{v^t_*\}_{t=1}^T$</code> be a solution of the optimality equations and suppose that <code>$\pi^*=(d_1^*, \dots, d_{T-1}^*)\in\Pi^{MR}$</code> satisfies
+<code>$$\begin{equation}\begin{split}
+&amp;\mathbb{E}_{\pi^*}\left[R_{t+1}\:|\:S_t=s_t\right] + \sum_{s\in\mathcal{S}, \, a\in\mathcal{A}} v^{t+1}_{\pi^*}(s) \: b_{d_t^*(s_t)}(a)\: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t) = \\ &amp;\quad\quad = \max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:A_t=a,\: S_t=s_t\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(s) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\}
+\end{split}\label{trial}
+\end{equation}$$</code>
+for <code>$t\in\{1,\dots,T\}$</code>. Then
+<code>$$\begin{equation}
+v^t_*(s_t) = v^t_{\pi^*}(s_t) \quad \quad \forall s_t \in\mathcal{S}, \: \forall t\in\{1,\dots,T\}
+\end{equation}$$</code>
+which implies that <code>$\pi^*$</code> is an <strong>optimal policy</strong>. <br></p>
+
+<p>We can actually say something more. <br>
+Let&rsquo;s rewrite \ref{trial} in a slightly different but equivalent way:
+<code>$$\begin{equation}\begin{split}
+&amp;\sum_{a\in\mathcal{A}}\: b_{d_t^*(s_t)}(a) \, \bigg\{\mathbb{E}_{\pi^*}\left[R_{t+1}\:|\:A_t=a, S_t=s_t\right] + \sum_{s\in\mathcal{S}} v^{t+1}_{\pi^*}(s) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t) \bigg\} = \\
+&amp;\quad\quad = \max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:A_t=a,\: S_t=s_t\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(s) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\}
+\end{split}\label{trial-2}
+\end{equation}$$</code>
+But a very simple calculus lemma stays the following:</p>
+
+<p><strong>Lemma</strong> - Let <code>$\{w_i\}_{i\in I}$</code> be a finite collection of real numbers and let <code>$\{q_i\}_{i\in I}$</code> be a probability distribution over <code>$I$</code> (i.e. <code>$q_i\in[0,1]$</code> and <code>$\sum_i q_i=1$</code>); then
+<code>$$\begin{equation}
+\max_{i\in I} w_i \geq \sum_{i\in I} q_i w_i
+\end{equation}$$</code>
+Equality holds if and only if
+<code>$$\begin{equation}
+q_i = 0
+\end{equation}$$</code>
+for every <code>$i$</code> such that <code>$w_i &lt; \max_{i\in I} w_i$</code>.</p>
+
+<p>In our case <code>$\{w_i\}_{i\in I}=\mathcal{A}$</code> and <code>$b_{d_t^*}(\cdot)$</code> is our probability distribution, which implies that a policy <code>$\pi^*=(d_1^*, \dots, d_{T-1}^*)$</code> is optimal if and only if it chooses with positive probability only those actions which maximize the right hand side of equation \ref{optimality-finite}. <br>
+In other words, solving the system of optimality equations provides us with the optimal actions to be taken at each step of our reinforcement learning problem, which in turn completely determine the set of optimal policies (which can even be chosen to be deterministic, instead of randomized!).</p>
+
+<p>Solving equations \ref{optimality-finite} is not so difficult, considering that we are assuming that <code>$\mathcal{A}$</code> is finite: a possible recipe is given by the <strong>Backward Induction Algorithm</strong>. <br>
+It determines
+<code>$$\begin{equation}
+A^*_t(s_t):= \underset{a\in\mathcal{A}}{\mathrm{argmax}} \bigg\{\mathbb{E}\left[R_{t+1}\:|\:S_t=s_t,\: A_t=a\right] + \sum_{s\in\mathcal{S}} v^{t+1}_*(s_t, s, a) \: \mathbb{P}(S_{t+1} = s\:|\: A_{t}=a, \, S_t = s_t)\bigg\}
+\end{equation}$$</code>
+for all <code>$t\in\{1,\dots, T-1\}$</code> and <code>$s_t\in\mathcal{S}$</code> - i.e. the set of actions which maximize the expression in curly brackets.</p>
+
+<p>Here is the pseudo-code:</p>
+
+<p>
+<figure >
+    
+        <img src="/image/rl-tutorial-02/backward-induction-algorithm.png" width="100%" />
+    
+    
+</figure>
+
+<br></p>
+
+<h3 id="optimality-for-arbitrary-time-horizons">Optimality for arbitrary time-horizons</h3>
+
+<p>We have seen that the solution of
+<code>$$\begin{equation}\begin{split}
+&amp;\forall t\in\{1,\dots, T-1\}, \: \forall s\in \mathcal{S}: \\
+&amp;v^t_*(s) = \max_{a\in\mathcal{A}}\bigg\{\mathbb{E}\left[R_{t+1}\:|\:A_t=a,\: S_t=s\right] + \sum_{s'\in\mathcal{S}} v^{t+1}_*(s') \: \mathbb{P}(S_{t+1} = s'\:|\: A_{t}=a, \, S_t = s)\bigg\} \\
+&amp;v^T_*(s) = r_T(s)
+\end{split}\end{equation}$$</code>
+provides us with the state-value function of an optimal policy (as well as the policy itself!) if the time-horizon is fixed and finite.</p>
+
+<p>Is there a way to reformulate this system to accomodate the general case - where <code>$T$</code> is a random variable, potentially finite?</p>
+
+<p>So far we have supposed that rewards and state transition probabilities were markovian. We want to make two more assumptions on the environment:</p>
+
+<ul>
+<li>rewards are stationary:
+<code>$$\begin{equation}
+\mathbb{E}\left[R_{t+1}\:|\:A_t=a,\: S_t=s\right] = \mathbb{E}\left[R_{j+1}\:|\:A_j=a,\: S_j=s\right]
+\end{equation}$$</code>
+for every <code>$t, j\in\{1, \dots, T-1\}$</code>;</li>
+<li>state transition probabilities are stationary:
+<code>$$\begin{equation}
+\mathbb{P}\left(S_{t+1}=s' \:|\:A_t=a,\: S_t=s\right) = \mathbb{P}\left(S_{j+1}=s' \:|\:A_j=a,\: S_j=s\right)
+\end{equation}$$</code>
+for every <code>$t, j\in\{1, \dots, T-1\}$</code>.</li>
+</ul>
+
+<p>It make sense, then, to define:
+<code>$$\begin{align}
+r(a, s) &amp;:= \mathbb{E}\left[R_{2}\:|\:A_1=a,\: S_1=s\right] \\
+p(s'\,|\, a, s)&amp;:=\mathbb{P}\left(S_{t+1}=s' \:|\:A_t=a,\: S_t=s\right)
+\end{align}$$</code>
+which can plugged into the optimality equations leading to:
+<code>$$\begin{equation}\begin{split}
+&amp;\forall t\in\{1,\dots, T-1\}, \: \forall s\in \mathcal{S}: \\
+&amp;v^t_*(s) = \max_{a\in\mathcal{A}}\bigg\{r(a, s) + \sum_{s'\in\mathcal{S}} v^{t+1}_*(s') \: p(s'\,|\, a, s)\bigg\} \\
+&amp;v^T_*(s) = r_T(s)
+\end{split}\end{equation}$$</code></p>
+
+<p>What would happen if we were to pass to the limit now, for <code>$t\to +\infty$</code>? <br>
+The only terms depending on <code>$t$</code> in the first equation are <code>$v^t_*$</code> and <code>$v^{t+1}$</code>, thanks to our stationarity assumption. <br>
+If the sequence <code>$\{v^{t}\}_t$</code> (which is infinite, if <code>$T=\infty$</code>) converged to a proper limit <code>$v_*$</code> for <code>$t\to +\infty$</code> we would find that
+<code>$$\begin{equation}
+v_*(s) = \max_{a\in\mathcal{A}}\bigg\{r(a, s) + \sum_{s'\in\mathcal{S}} v_*(s') \: p(s'\,|\, a, s)\bigg\} \\
+\end{equation}\label{bellman-optimal}$$</code></p>
+
+<p>Equation \ref{bellman-optimal} is called <strong>Bellman optimality equation</strong> and it does actually provide us with an optimal state-value function in the general case. <br>
+But this will be topic of the next episode.</p>
+
+
+<figure >
+    
+        <img src="https://media.giphy.com/media/TknVSmyTROF8c/giphy.gif" width="75%" />
+    
+    
+</figure>
+
+
+                </section>
+            </article>
+
+            
+                <a class="twitter" href="https://twitter.com/intent/tweet?text=http%3a%2f%2flpalmieri.com%2fposts%2frl-introduction-02%2f - Reinforcement%20Learning%3a%20optimal%20policies%20%5bPart%202%5d "><span class="icon-twitter"> tweet</span></a>
+
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> Share</span>
+</a>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'lpalmieri'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/LukeMathWalker">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+    <a class="symbol" href="https://www.linkedin.com/in/luca-palmieri/">
+        <i class="fa fa-linkedin-square"></i>
+    </a>
+    
+    <a class="symbol" href="https://www.twitter.com/algo_luca">
+        <i class="fa fa-twitter-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2018 <i class="fa fa-heart" aria-hidden="true"></i> Luca Palmieri
+    
+    </p>
+    <p class="small">
+        Powered by <a href="http://www.gohugo.io/">Hugo</a> Theme By <a href="https://github.com/nodejh/hugo-theme-cactus-plus">nodejh</a>
+    </p>
+</footer>
+
+        </section>
+
+        <script src="http://lpalmieri.com/js/jquery-2.2.4.min.js"></script>
+<script src="http://lpalmieri.com/js/main.js"></script>
+<script src="http://lpalmieri.com/js/highlight.min.js"></script>
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$']],
+    processEscapes: true,
+    processEnvironments: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+    TeX: { equationNumbers: { autoNumber: "all" },
+         extensions: ["AMSmath.js", "AMSsymbols.js"] }
+  }
+  });
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i = 0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+
+  MathJax.Hub.Config({
+
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+  });
+</script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-112846051-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+
+
+
+    </body>
+</html>
